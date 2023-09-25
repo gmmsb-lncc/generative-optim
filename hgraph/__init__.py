@@ -1,6 +1,36 @@
-from hgraph.mol_graph import MolGraph
-from hgraph.encoder import HierMPNEncoder
+"""This source code was retrieved from https://github.com/wengong-jin/hgraph2graph
+
+MIT License
+
+Copyright (c) 2020 Wengong Jin, Regina Barzilay, Tommi Jaakkola
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+from hgraph.dataset import (
+    DataFolder,
+    MoleculeDataset,
+    MolEnumRootDataset,
+    MolPairDataset,
+)
 from hgraph.decoder import HierMPNDecoder
-from hgraph.vocab import Vocab, PairVocab, common_atom_vocab
-from hgraph.hgnn import HierVAE, HierVGNN, HierCondVGNN
-from hgraph.dataset import MoleculeDataset, MolPairDataset, DataFolder, MolEnumRootDataset
+from hgraph.encoder import HierMPNEncoder
+from hgraph.hgnn import HierCondVGNN, HierVAE, HierVGNN
+from hgraph.mol_graph import MolGraph
+from hgraph.vocab import PairVocab, Vocab, common_atom_vocab

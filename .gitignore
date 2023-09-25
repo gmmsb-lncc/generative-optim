@@ -12,6 +12,7 @@ tags
 
 # other
 .aim
+venv-*
 
 
 # Byte-compiled / optimized / DLL files

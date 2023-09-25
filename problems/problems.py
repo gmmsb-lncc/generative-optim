@@ -4,7 +4,7 @@ from pymoo.core.problem import Problem
 from rdkit import Chem
 from rdkit.Chem.Descriptors import MolWt
 
-from hiervae import Decoder as HierVAEDecoder
+from hgraph.hiervae import Decoder as HierVAEDecoder
 
 __all__ = ["MolecularWeight"]
 

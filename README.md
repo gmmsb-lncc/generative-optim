@@ -1,17 +1,17 @@
 # generative-optim
-Otimização molecular usando modelos generativos.
+Molecular optimization using generative models
 
 ## Instalação
-Crie um ambiente virtual usando o **Python 3.8** (última versão compatível testada) e instale as dependências:
+When using the HierVAE model, create a virtual environment using **Python 3.8** (latest tested compatible version) and install the dependencies:
 
 ```bash
-conda create --prefix ./venv python=3.8  # usa o conda para instalar o python 3.8
-conda activate ./venv  # ativa o ambiente virtual
-python -m pip install -r requirements.txt  # instala as dependências
+conda create --prefix ./venv-hiervae python=3.8  # using conda for python 3.8
+conda activate ./venv-hiervae
+python -m pip install -r requirements-hiervae.txt
 ```
 
 ## Uso
 ```bash
-python single_optim.py --help  # mostra os parâmetros disponíveis
+python single_optim.py --help  # show help
 ```
 
