@@ -44,7 +44,11 @@ def main(args: argparse.Namespace):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("single-objective optimization")
+    parser = argparse.ArgumentParser(
+        "single-objective optimization",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
     # fmt: off
     # script level parameters
     script_args = parser.add_argument_group("optimization arguments")
