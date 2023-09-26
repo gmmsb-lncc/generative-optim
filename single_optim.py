@@ -13,7 +13,11 @@ from problems import *
 
 def main(args: argparse.Namespace):
     problem = eval(args.optim_prob)(
-        args.mw_target, n_var=args.num_vars, xl=args.lbound, xu=args.ubound
+        args.property_target,
+        n_var=args.num_vars,
+        xl=args.lbound,
+        xu=args.ubound,
+        decoder=args.decoder,
     )
 
     population = Population(args.population_size, args.num_vars, args.seed).initialize()
@@ -32,8 +36,6 @@ def main(args: argparse.Namespace):
     # setup callback
     run = Run(experiment=args.experiment)
     run["hparams"] = vars(args)
-    run["hparams"]["optim_prob"] = problem.__class__.__name__
-    run["hparams"]["decoder"] = problem.decoder.__class__.__name__
 
     # begin optimization
     termination_criteria = ("n_gen", args.max_gens)
@@ -45,8 +47,6 @@ def main(args: argparse.Namespace):
         verbose=args.verbose,
         callback=AimCallback(run, problem),
     )
-
-    decoder = problem.decoder
 
 
 if __name__ == "__main__":
@@ -65,9 +65,10 @@ if __name__ == "__main__":
 
     # problem parameters
     problem_args = parser.add_argument_group("problem arguments")
-    problem_args.add_argument("--mw-target", type=float, default=800, help="target molecular weight")
+    problem_args.add_argument("--property-target", type=float, default=800, help="molecular property target value")
     problem_args.add_argument("--optim-prob", type=str, default="MolecularWeight", help="optimization problem")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
+    problem_args.add_argument("--decoder", type=str, default="HierVAEDecoder", help="decoder model")
 
     # genetic algorithm parameters
     ga_args = parser.add_argument_group("genetic algorithm arguments")

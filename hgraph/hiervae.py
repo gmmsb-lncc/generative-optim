@@ -32,7 +32,7 @@ class Config:
     latent_size = 32
 
 
-class Decoder:
+class HierVAEDecoder:
     def __init__(self):
         self.model = self.get_pretrained_model()
 

@@ -5,7 +5,7 @@ from pymoo.core.problem import Problem
 from rdkit import Chem
 from rdkit.Chem.Descriptors import MolWt
 
-from hgraph.hiervae import Decoder as HierVAEDecoder
+from hgraph.hiervae import HierVAEDecoder
 
 
 __all__ = ["MolecularWeight", "MolecularProblem"]
@@ -47,9 +47,11 @@ class MolecularWeight(MolecularProblem):
 
     """
 
-    def __init__(self, mw_target, n_var=32, xl=-1, xu=1):
+    def __init__(
+        self, mw_target, n_var=32, xl=-1, xu=1, decoder: str = "HierVAEDecoder"
+    ):
         self.mw_target = mw_target
-        self.decoder = HierVAEDecoder()
+        self.decoder = eval(decoder)()
         self.min_property_history = list()
         self.avg_property_history = list()
 
