@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import numpy as np
 import torch
 from pymoo.core.problem import Problem
@@ -6,10 +7,35 @@ from rdkit.Chem.Descriptors import MolWt
 
 from hgraph.hiervae import Decoder as HierVAEDecoder
 
-__all__ = ["MolecularWeight"]
+
+__all__ = ["MolecularWeight", "MolecularProblem"]
 
 
-class MolecularWeight(Problem):
+class MolecularProblem(ABC, Problem):
+    """Abstract base class for molecular optimization problems."""
+
+    @abstractmethod
+    def calc_property(self, x: np.ndarray) -> np.ndarray:
+        """Calculate the molecular property for a batch of compounds."""
+        pass
+
+    @abstractmethod
+    def get_decoder(self):
+        """Return the decoder object."""
+        pass
+
+    @abstractmethod
+    def get_min_property_history(self):
+        """Return the minimum property history."""
+        pass
+
+    @abstractmethod
+    def get_avg_property_history(self):
+        """Return the average property history."""
+        pass
+
+
+class MolecularWeight(MolecularProblem):
     """Generate compounds with a molecular weight constraint.
 
     The pymoo `Problem` class evaluates a batch of solutions at once (ideal for
@@ -24,6 +50,8 @@ class MolecularWeight(Problem):
     def __init__(self, mw_target, n_var=32, xl=-1, xu=1):
         self.mw_target = mw_target
         self.decoder = HierVAEDecoder()
+        self.min_property_history = list()
+        self.avg_property_history = list()
 
         super().__init__(
             n_var=n_var,
@@ -33,7 +61,16 @@ class MolecularWeight(Problem):
             xu=xu,
         )
 
-    def calc_mw(self, x: np.ndarray) -> np.ndarray:
+    def get_decoder(self) -> np.ndarray:
+        return self.decoder
+
+    def get_min_property_history(self) -> np.ndarray:
+        return np.array(self.min_property_history)
+
+    def get_avg_property_history(self) -> np.ndarray:
+        return np.array(self.avg_property_history)
+
+    def calc_property(self, x: np.ndarray) -> np.ndarray:
         """Calculate the molecular weight of a batch of compounds."""
         assert x.ndim == 2, "x must be two-dimensional"
         assert x.shape[1] == self.n_var, "x must have the correct number of variables"
@@ -55,4 +92,10 @@ class MolecularWeight(Problem):
         `out["F"]` should be a vector of size `n_var` (since we have one obj only).
 
         """
-        out["F"] = np.square(self.mw_target - self.calc_mw(x))
+        properties = self.calc_property(x)
+        fitness = np.square(self.mw_target - properties)
+
+        self.min_property_history.append(properties[fitness.argmin()])
+        self.avg_property_history.append(properties.mean())
+
+        out["F"] = fitness

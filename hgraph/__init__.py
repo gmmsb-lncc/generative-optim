@@ -1,4 +1,4 @@
-"""This source code was retrieved from https://github.com/wengong-jin/hgraph2graph
+"""The source code of this module was retrieved from https://github.com/wengong-jin/hgraph2graph
 
 MIT License
 

@@ -11,7 +11,22 @@ python -m pip install -r requirements-hiervae.txt
 ```
 
 ## Usage
+First, initialize a new **aim** repository for tracking experiments:
+```bash
+cd generative-optim
+aim init
+```
+
+Then, run the optimization script with the desired arguments:
 ```bash
 python single_optim.py --help  # show help
 ```
+
+## Experiment tracking
+To visualize experiments using **aim UI**, run the following commmand in the terminal:
+```bash
+aim up
+```
+
+Then, open the browser at `http://localhost:43800/` to see the experiments.
 

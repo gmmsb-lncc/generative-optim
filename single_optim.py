@@ -1,11 +1,13 @@
 import argparse
 import os
 
+from aim import Run
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.operators.crossover.pntx import PointCrossover
 from pymoo.optimize import minimize
 
 from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
+from algorithms import AimCallback
 from problems import *
 
 
@@ -22,25 +24,29 @@ def main(args: argparse.Namespace):
     algorithm = GA(
         pop_size=args.population_size,
         sampling=population,
-        # selection=selection,
+        selection=selection,
         crossover=xover,
         mutation=mutation,
     )
 
-    termination_criteria = ("n_gen", args.max_gens)
+    # setup callback
+    run = Run(experiment=args.experiment)
+    run["hparams"] = vars(args)
+    run["hparams"]["optim_prob"] = problem.__class__.__name__
+    run["hparams"]["decoder"] = problem.decoder.__class__.__name__
 
     # begin optimization
+    termination_criteria = ("n_gen", args.max_gens)
     result = minimize(
         problem=problem,
         algorithm=algorithm,
         termination=termination_criteria,
         seed=args.seed,
         verbose=args.verbose,
+        callback=AimCallback(run, problem),
     )
 
     decoder = problem.decoder
-    print(f"Best solution found: {decoder.decode(result.X)}")
-    print(f"Function value: {result.F}")
 
 
 if __name__ == "__main__":
@@ -52,7 +58,8 @@ if __name__ == "__main__":
     # fmt: off
     # script level parameters
     script_args = parser.add_argument_group("optimization arguments")
-    script_args.add_argument("--max-gens", type=int, default=100, help="number of generations")
+    script_args.add_argument("--experiment", type=str, help="experiment name", required=True)
+    script_args.add_argument("--max-gens", type=int, default=20, help="number of generations")
     script_args.add_argument("--seed", type=int, default=42, help="random seed")
     script_args.add_argument("--verbose", action="store_true", help="print progress")
 
@@ -64,9 +71,9 @@ if __name__ == "__main__":
 
     # genetic algorithm parameters
     ga_args = parser.add_argument_group("genetic algorithm arguments")
-    ga_args.add_argument("--population-size", type=int, default=100, help="population size")
+    ga_args.add_argument("--population-size", type=int, default=40, help="population size")
     ga_args.add_argument("--num-offspring", type=int, default=None, help="number of offspring")
-    ga_args.add_argument("--mutation-sigma", type=float, default=0.1, help="gaussian mutation strength")
+    ga_args.add_argument("--mutation-sigma", type=float, default=0.01, help="gaussian mutation strength")
     ga_args.add_argument("--mutation-prob", type=float, default=0.1, help="mutation probability")
     ga_args.add_argument("--xover-points", type=int, default=2, help="number of crossover points")
     ga_args.add_argument("--xover-prob", type=float, default=0.9, help="crossover probability")
