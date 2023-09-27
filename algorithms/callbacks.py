@@ -1,7 +1,9 @@
+import os
 from pymoo.core.callback import Callback
 from aim import Run, Text
 import numpy as np
 
+import pandas as pd
 from problems.molproblem import MolecularProblem
 
 __all__ = ["AimCallback"]
@@ -30,3 +32,14 @@ class AimCallback(Callback):
             self.run.track(fitness[:, i].mean(), name=f"avg_fitness_{i}", step=n_gen)
             self.run.track(min_property[i], name=f"min_property_{i}", step=n_gen)
             self.run.track(avg_property[i], name=f"avg_property_{i}", step=n_gen)
+
+        # create a pandas dataframe for the current generation
+        df = pd.DataFrame()
+        df["chrm"] = algorithm.pop.get("X").tolist()
+        for i in range(self.problem.n_obj):
+            df[f"f{i}"] = fitness[:, i].squeeze()
+
+        # save dataframe as a csv and track
+        repo = os.path.join(self.run.repo.path, "meta/chunks", self.run.hash)
+        df.to_csv(os.path.join(repo, f"gen={n_gen}.csv"), index=False)
+        # self.run.track(Text(df.to_csv(index=False)), name="population", step=n_gen)
