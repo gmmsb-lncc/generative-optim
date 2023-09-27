@@ -2,7 +2,7 @@ from pymoo.core.callback import Callback
 from aim import Run, Text
 import numpy as np
 
-from problems import MolecularProblem
+from problems.molproblem import MolecularProblem
 
 __all__ = ["AimCallback"]
 

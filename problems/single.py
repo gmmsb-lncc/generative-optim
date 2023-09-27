@@ -1,42 +1,15 @@
-from abc import ABC, abstractmethod
 import numpy as np
 import torch
-from pymoo.core.problem import Problem
+
 from rdkit import Chem
 from rdkit.Chem.Descriptors import MolWt
-
-from .sa_score import calculateScore
+from utils.sa_score import calculateScore
 
 from hgraph.hiervae import HierVAEDecoder
+from .molproblem import MolecularProblem
 
 
-
-
-__all__ = ["MolecularWeight", "MolecularProblem", "SAScore"]
-
-
-class MolecularProblem(ABC, Problem):
-    """Abstract base class for molecular optimization problems."""
-
-    @abstractmethod
-    def calc_property(self, x: np.ndarray) -> np.ndarray:
-        """Calculate the molecular property for a batch of compounds."""
-        pass
-
-    @abstractmethod
-    def get_decoder(self):
-        """Return the decoder object."""
-        pass
-
-    @abstractmethod
-    def get_min_property_history(self):
-        """Return the minimum property history."""
-        pass
-
-    @abstractmethod
-    def get_avg_property_history(self):
-        """Return the average property history."""
-        pass
+__all__ = ["MolecularWeight", "SAScore"]
 
 
 class MolecularWeight(MolecularProblem):
@@ -107,15 +80,12 @@ class MolecularWeight(MolecularProblem):
         out["F"] = fitness
 
 
-
 class SAScore(MolecularProblem):
-    """Generate compounds with maximum SA.
-    """
+    """Generate compounds with maximum SA."""
 
     def __init__(
         self, sa_target, n_var=32, xl=-1, xu=1, decoder: str = "HierVAEDecoder"
     ):
-        # self.mw_target = mw_target
         self.sa_target = sa_target
         self.decoder = eval(decoder)()
         self.min_property_history = list()
@@ -139,7 +109,7 @@ class SAScore(MolecularProblem):
         return np.array(self.avg_property_history)
 
     def calc_property(self, x: np.ndarray) -> np.ndarray:
-        """Calculate the molecular weight of a batch of compounds."""
+        """Calculate the SA score of a batch of compounds."""
         assert x.ndim == 2, "x must be two-dimensional"
         assert x.shape[1] == self.n_var, "x must have the correct number of variables"
 
@@ -151,15 +121,6 @@ class SAScore(MolecularProblem):
         return np.array(sas)
 
     def _evaluate(self, x: np.ndarray, out: dict, *args, **kwargs):
-        """Returns the squared difference between the target and molecular weight.
-
-        The function values are supposed to be written into `out["F"]` and the
-        constraints into `out["G"]` if `n_constr` is greater than zero.
-
-        The input `x` is a two-dimensional array of size (n_sols, n_var).
-        `out["F"]` should be a vector of size `n_var` (since we have one obj only).
-
-        """
         properties = self.calc_property(x)
         fitness = np.square(self.sa_target - properties)
 
