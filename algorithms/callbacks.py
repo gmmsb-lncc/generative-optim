@@ -14,23 +14,19 @@ class AimCallback(Callback):
         self.problem = problem
 
     def notify(self, algorithm):
-        min_f_idx = algorithm.pop.get("F").argmin()
-        min_f = algorithm.pop.get("F").min()
-        avg_f = algorithm.pop.get("F").mean()
         n_gen = algorithm.n_gen
         min_property = self.problem.get_min_property_history()[-1]
         avg_property = self.problem.get_avg_property_history()[-1]
+        fitness = algorithm.pop.get("F")
 
-        best_solution_vector = algorithm.pop[min_f_idx].X[np.newaxis, :]
-        best_solution_smiles = self.problem.get_decoder().decode(best_solution_vector)
+        # adjust shape for single objective problems
+        if self.problem.n_obj == 1:
+            fitness = fitness[:, np.newaxis]
+            min_property = np.array([min_property])
+            avg_property = np.array([avg_property])
 
-        self.run.track(min_f, name="min_fitness", step=n_gen)
-        self.run.track(avg_f, name="avg_fitness", step=n_gen)
-        self.run.track(min_property, name="min_property", step=n_gen)
-        self.run.track(avg_property, name="avg_property", step=n_gen)
-
-        solutions = {
-            "best_solution_smiles": best_solution_smiles,
-            "best_solution_vector": best_solution_vector.squeeze().tolist(),
-        }
-        self.run.track(Text(str(solutions)), name="best_solution", step=n_gen)
+        for i in range(self.problem.n_obj):
+            self.run.track(fitness[:, i].min(), name=f"min_fitness_{i}", step=n_gen)
+            self.run.track(fitness[:, i].mean(), name=f"avg_fitness_{i}", step=n_gen)
+            self.run.track(min_property[i], name=f"min_property_{i}", step=n_gen)
+            self.run.track(avg_property[i], name=f"avg_property_{i}", step=n_gen)

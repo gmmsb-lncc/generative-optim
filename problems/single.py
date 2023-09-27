@@ -40,7 +40,7 @@ class MolecularWeight(MolecularProblem):
             xu=xu,
         )
 
-    def get_decoder(self) -> np.ndarray:
+    def get_decoder(self):
         return self.decoder
 
     def get_min_property_history(self) -> np.ndarray:
