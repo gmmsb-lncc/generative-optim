@@ -1,19 +1,34 @@
+import argparse
 import os
 from pymoo.core.callback import Callback
-from aim import Run, Text
+from aim import Run, Text, Image, Figure
 import numpy as np
 
 import pandas as pd
 from problems.molproblem import MolecularProblem
+from pymoo.visualization.scatter import Scatter
+from matplotlib import pyplot as plt
 
 __all__ = ["AimCallback"]
 
 
+def pareto_front_plot(algorithm):
+    f = algorithm.pop.get("F")
+    fig, axis = plt.subplots()
+    axis.set_xlabel("$f_1(x)$")
+    axis.set_ylabel("$f_2(x)$")
+    axis.scatter(f[:, 0], f[:, 1])
+    return fig
+
+
 class AimCallback(Callback):
-    def __init__(self, run: Run, problem: MolecularProblem) -> None:
+    def __init__(
+        self, run: Run, problem: MolecularProblem, args: argparse.Namespace
+    ) -> None:
         super().__init__()
         self.run = run
         self.problem = problem
+        self.args = args
 
     def notify(self, algorithm):
         n_gen = algorithm.n_gen
@@ -43,3 +58,8 @@ class AimCallback(Callback):
         repo = os.path.join(self.run.repo.path, "meta/chunks", self.run.hash)
         df.to_csv(os.path.join(repo, f"gen={n_gen}.csv"), index=False)
         # self.run.track(Text(df.to_csv(index=False)), name="population", step=n_gen)
+
+        # save pareto front plot
+        if self.problem.n_obj > 1 and n_gen == self.args.max_gens:
+            fig = pareto_front_plot(algorithm)
+            self.run.track(Figure(fig), name="pareto_front")
