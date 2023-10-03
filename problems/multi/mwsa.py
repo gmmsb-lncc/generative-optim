@@ -1,10 +1,12 @@
-from .molproblem import MolecularProblem
 import numpy as np
 import torch
 from rdkit import Chem
-from utils.sa_score import calculateScore
 
 from hgraph.hiervae import HierVAEDecoder
+from problems.molecular_problem import MolecularProblem
+from utils.sa_score import calculateScore
+
+__all__ = ["MWSA"]
 
 
 class MWSA(MolecularProblem):

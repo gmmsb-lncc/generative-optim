@@ -1,13 +1,14 @@
 import argparse
 import os
-from pymoo.core.callback import Callback
-from aim import Run, Text, Image, Figure
-import numpy as np
 
+import numpy as np
 import pandas as pd
-from problems.molproblem import MolecularProblem
-from pymoo.visualization.scatter import Scatter
+from aim import Figure, Image, Run, Text
 from matplotlib import pyplot as plt
+from pymoo.core.callback import Callback
+from pymoo.visualization.scatter import Scatter
+
+from problems.molecular_problem import MolecularProblem
 
 __all__ = ["AimCallback"]
 
