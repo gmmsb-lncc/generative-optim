@@ -1,13 +1,13 @@
 import argparse
 import os
-
-import numpy as np
-import pandas as pd
-from aimstack.base import Figure, Image, Run, Text
-from matplotlib import pyplot as plt
 from pymoo.core.callback import Callback
+from aim import Run, Text, Image, Figure
+import numpy as np
 
+import pandas as pd
 from problems.molproblem import MolecularProblem
+from pymoo.visualization.scatter import Scatter
+from matplotlib import pyplot as plt
 
 __all__ = ["AimCallback"]
 

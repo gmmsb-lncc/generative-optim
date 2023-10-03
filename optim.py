@@ -2,14 +2,15 @@ import argparse
 import os
 import subprocess
 
-from aimstack.base import Run, Text
-from pymoo.algorithms.moo.nsga2 import NSGA2
+from aim import Run
+import aim
 from pymoo.algorithms.soo.nonconvex.ga import GA
+from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.operators.crossover.pntx import PointCrossover
 from pymoo.optimize import minimize
 
-from algorithms import AimCallback
 from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
+from algorithms import AimCallback
 from problems import *
 
 
@@ -68,7 +69,7 @@ def _get_git_revision_hash() -> str:
 def _get_this_file() -> None:
     this_file = os.path.abspath(__file__)
     with open(this_file, "r") as f:
-        file = Text(f.read())
+        file = aim.Text(f.read())
 
     return file
 
@@ -106,4 +107,5 @@ if __name__ == "__main__":
     ga_args.add_argument("--lbound", type=float, default=-2.5, help="gene value lower bound")
     # fmt: on
 
-    main(parser.parse_args())
+    args = parser.parse_args()
+    main(args)
