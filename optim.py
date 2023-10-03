@@ -25,14 +25,15 @@ def main(args: argparse.Namespace):
 
     population = Population(
         args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
-    ).initialize()
+    )
+
     xover = PointCrossover(prob=args.xover_prob, n_points=args.xover_points)
     mutation = GaussianMutationFix(sigma=args.mutation_sigma, prob=args.mutation_prob)
     selection = BinaryTournament()
 
     algorithm = GA(
         pop_size=args.population_size,
-        sampling=population,
+        sampling=population.initialize(),
         selection=selection,
         crossover=xover,
         mutation=mutation,
@@ -61,6 +62,12 @@ def main(args: argparse.Namespace):
         seed=args.seed,
         verbose=args.verbose,
         callback=AimCallback(run, problem, args),
+    )
+
+    # export final population
+    chroms = result.pop.get("X")
+    population.export_population(
+        chroms, f"generated_molecules_run={run.hash}_exp={args.experiment}.txt"
     )
 
 
