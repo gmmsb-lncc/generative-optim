@@ -1,41 +1,57 @@
 import argparse
 import os
+import subprocess
 
+import aim
 from aim import Run
+from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.operators.crossover.pntx import PointCrossover
 from pymoo.optimize import minimize
 
-from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
 from algorithms import AimCallback
+from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
 from problems import *
 
 
 def main(args: argparse.Namespace):
     problem = eval(args.optim_prob)(
-        args.property_target,
+        args.prop_targets,
         n_var=args.num_vars,
         xl=args.lbound,
         xu=args.ubound,
         decoder=args.decoder,
     )
 
-    population = Population(args.population_size, args.num_vars, args.seed).initialize()
+    population = Population(
+        args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
+    )
+
     xover = PointCrossover(prob=args.xover_prob, n_points=args.xover_points)
     mutation = GaussianMutationFix(sigma=args.mutation_sigma, prob=args.mutation_prob)
     selection = BinaryTournament()
 
     algorithm = GA(
         pop_size=args.population_size,
-        sampling=population,
+        sampling=population.initialize(),
         selection=selection,
         crossover=xover,
         mutation=mutation,
     )
 
+    # algorithm = NSGA2(
+    #     pop_size=args.population_size,
+    #     sampling=population,
+    #     crossover=xover,
+    #     mutation=mutation,
+    # )
+
     # setup callback
     run = Run(experiment=args.experiment)
+    args.algorithm = algorithm.__class__.__name__
+    args.git_hash = _get_git_revision_hash()
     run["hparams"] = vars(args)
+    run.track(_get_this_file(), name="script")
 
     # begin optimization
     termination_criteria = ("n_gen", args.max_gens)
@@ -45,8 +61,26 @@ def main(args: argparse.Namespace):
         termination=termination_criteria,
         seed=args.seed,
         verbose=args.verbose,
-        callback=AimCallback(run, problem),
+        callback=AimCallback(run, problem, args),
     )
+
+    # export final population
+    chroms = result.pop.get("X")
+    population.export_population(
+        chroms, f"generated_molecules_run={run.hash}_exp={args.experiment}.txt"
+    )
+
+
+def _get_git_revision_hash() -> str:
+    return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+
+
+def _get_this_file() -> None:
+    this_file = os.path.abspath(__file__)
+    with open(this_file, "r") as f:
+        file = aim.Text(f.read())
+
+    return file
 
 
 if __name__ == "__main__":
@@ -65,7 +99,7 @@ if __name__ == "__main__":
 
     # problem parameters
     problem_args = parser.add_argument_group("problem arguments")
-    problem_args.add_argument("--property-target", type=float, default=800, help="molecular property target value")
+    problem_args.add_argument("--prop-targets", type=float, help="molecular property target value, can be multiple", nargs="+", required=True)
     problem_args.add_argument("--optim-prob", type=str, default="MolecularWeight", help="optimization problem")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
     problem_args.add_argument("--decoder", type=str, default="HierVAEDecoder", help="decoder model")
