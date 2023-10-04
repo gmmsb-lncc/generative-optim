@@ -1,7 +1,4 @@
 import numpy as np
-import torch
-from rdkit import Chem
-from rdkit.Chem.Descriptors import MolWt
 
 from hgraph.hiervae import HierVAEDecoder
 from problems.molecular_problem import MolecularProblem
@@ -37,26 +34,11 @@ class MolecularWeight(MolecularProblem):
             xu=xu,
         )
 
-    def get_decoder(self):
-        return self.decoder
-
     def get_min_property_history(self) -> np.ndarray:
         return np.array(self.min_property_history)
 
     def get_avg_property_history(self) -> np.ndarray:
         return np.array(self.avg_property_history)
-
-    def calc_property(self, x: np.ndarray) -> np.ndarray:
-        """Calculate the molecular weight of a batch of compounds."""
-        assert x.ndim == 2, "x must be two-dimensional"
-        assert x.shape[1] == self.n_var, "x must have the correct number of variables"
-
-        sols = torch.from_numpy(x)
-        smiles = self.decoder.decode(torch.as_tensor(sols, dtype=torch.float32))
-        mols = [Chem.MolFromSmiles(s) for s in smiles]
-        mws = [MolWt(m) for m in mols]
-
-        return np.array(mws)
 
     def _evaluate(self, x: np.ndarray, out: dict, *args, **kwargs):
         """Returns the squared difference between the target and molecular weight.
@@ -68,7 +50,10 @@ class MolecularWeight(MolecularProblem):
         `out["F"]` should be a vector of size `n_var` (since we have one obj only).
 
         """
-        properties = self.calc_property(x)
+        # properties = self.calc_property(x)
+        mols = self.vector2molecule(x, self.decoder)
+        properties = np.array([self.molecular_weight(m) for m in mols])
+
         fitness = np.square(self.mw_target - properties)
 
         self.min_property_history.append(properties[fitness.argmin()])
