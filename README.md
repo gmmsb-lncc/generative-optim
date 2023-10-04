@@ -25,15 +25,9 @@ python optim.py --help  # show help
 
 ### Optimization algorithm and problems
 Inside the `optim.py` script, set the desired algorithm for optimization.
-Check available algorithms in the pymoo [documentation page](https://pymoo.org/algorithms/list.html#nb-algorithms-list).
+Check available algorithms in the [pymoo documentation page](https://pymoo.org/algorithms/list.html#nb-algorithms-list).
 
-Optimization problems are implemented inside the `problems/` folder. So far, the following problems are available:
-
-- single-objective:
-    - `MolecularWeight`: generate molecules with a target molecular weight;
-    - `SAScore`: generate molecules with a target synthetic accessibility score (calculations done using [RDKit Contrib script](https://github.com/rdkit/rdkit/tree/880a8e5725cf842091c3f273da2b35b13e88fffb/Contrib/SA_Score));
-- multi/many-objective:
-    - `MWSA`: generate molecules with a target molecular weight and synthetic accessibility score (nobjs=2);
+Molecular optimization problems are implemented inside the `problems/{single, multi}` folders.
 
 ## Experiment tracking
 To visualize experiments using **aim UI**, run the following commmand in the terminal:
