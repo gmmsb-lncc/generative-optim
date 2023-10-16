@@ -2,15 +2,15 @@ import argparse
 import os
 import subprocess
 
-from aim import Run
 import aim
-from pymoo.algorithms.soo.nonconvex.ga import GA
+from aim import Run
 from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.operators.crossover.pntx import PointCrossover
 from pymoo.optimize import minimize
 
-from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
 from algorithms import AimCallback
+from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
 from problems import *
 
 
@@ -23,25 +23,28 @@ def main(args: argparse.Namespace):
         decoder=args.decoder,
     )
 
-    population = Population(args.population_size, args.num_vars, args.seed).initialize()
+    population = Population(
+        args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
+    )
+
     xover = PointCrossover(prob=args.xover_prob, n_points=args.xover_points)
     mutation = GaussianMutationFix(sigma=args.mutation_sigma, prob=args.mutation_prob)
     selection = BinaryTournament()
 
-    # algorithm = GA(
-    #     pop_size=args.population_size,
-    #     sampling=population,
-    #     selection=selection,
-    #     crossover=xover,
-    #     mutation=mutation,
-    # )
-
-    algorithm = NSGA2(
+    algorithm = GA(
         pop_size=args.population_size,
-        sampling=population,
+        sampling=population.initialize(),
+        selection=selection,
         crossover=xover,
         mutation=mutation,
     )
+
+    # algorithm = NSGA2(
+    #     pop_size=args.population_size,
+    #     sampling=population,
+    #     crossover=xover,
+    #     mutation=mutation,
+    # )
 
     # setup callback
     run = Run(experiment=args.experiment)
@@ -59,6 +62,12 @@ def main(args: argparse.Namespace):
         seed=args.seed,
         verbose=args.verbose,
         callback=AimCallback(run, problem, args),
+    )
+
+    # export final population
+    chroms = result.pop.get("X")
+    population.export_population(
+        chroms, f"generated_molecules_run={run.hash}_exp={args.experiment}.txt"
     )
 
 
