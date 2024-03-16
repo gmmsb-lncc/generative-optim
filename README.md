@@ -29,7 +29,7 @@ python optim.py --help  # show help
 ```
 
 ### Optimization algorithm and problems
-Choose from the available optimization algorithms and problems (see --help for more details). Problem target values can be set inside the `optim.py` script.
+Choose from the available optimization algorithms and problems (see `--help` for more details). Problem target values can be set inside the `optim.py` script.
 
 ## Experiment tracking
 To visualize experiments using **aim UI**, run the following commmand in the terminal:
