@@ -39,4 +39,3 @@ def test_composite_problem_evaluation():
 
     out = {}
     composite._evaluate(X, out)
-    print(out)
