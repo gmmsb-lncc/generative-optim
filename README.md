@@ -29,7 +29,7 @@ python optim.py --help  # show help
 ```
 
 ### Optimization algorithm and problems
-Choose from the available optimization algorithms and problems (see `--help` for more details). Objective are defined in the `objectives.py` file.
+Choose from the available optimization algorithms and problems (see `--help` for more details). Objectives are defined in the `objectives_conf.py` file.
 
 ## Experiment tracking
 To visualize experiments using **aim UI**, run the following commmand in the terminal:

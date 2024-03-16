@@ -14,7 +14,7 @@ from algorithms.callbacks import AimCallback
 from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
 from algorithms.population import Population
 from hgraph.hiervae import HierVAEDecoder
-from objectives import define_objectives
+from objectives_conf import define_objectives
 from problems import ProblemFactory
 
 
@@ -63,6 +63,7 @@ def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
     args.git_hash = _get_git_revision_hash()
     run["hparams"] = vars(args)
     run.track(_get_this_file(), name="script")
+    run.track(_get_objectives_conf_file(), name="objectives_conf")
     return run
 
 
@@ -94,7 +95,12 @@ def _get_this_file() -> None:
     this_file = os.path.abspath(__file__)
     with open(this_file, "r") as f:
         file = aim.Text(f.read())
+    return file
 
+
+def _get_objectives_conf_file() -> None:
+    with open("objectives_conf.py", "r") as f:
+        file = aim.Text(f.read())
     return file
 
 
