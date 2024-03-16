@@ -14,13 +14,8 @@ from algorithms.callbacks import AimCallback
 from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
 from algorithms.population import Population
 from hgraph.hiervae import HierVAEDecoder
-from problems import (
-    MolecularProblem,
-    MolecularWeight,
-    ProblemFactory,
-    QEDProblem,
-    SAScore,
-)
+from objectives import define_objectives
+from problems import ProblemFactory
 
 
 def main(args: argparse.Namespace):
@@ -72,20 +67,12 @@ def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
 
 
 def configure_problem(args: argparse.Namespace):
-    @dataclass
-    class ProblemConfig:
-        problem: MolecularProblem
-        target_value: float
-
-    problems = {
-        "MW": ProblemConfig(MolecularWeight, 800),
-        "QED": ProblemConfig(QEDProblem, 1.0),
-        "SA": ProblemConfig(SAScore, 1.0),
-    }
-
+    problems = define_objectives()
     problem_factory = ProblemFactory()
     for k, v in problems.items():
         problem_factory.register_problem(k, v.problem)
+
+    print("Objs:", [(p, problems[p].target_value) for p in args.optim_probs])
 
     problem = problem_factory.create_problem(
         problem_identifiers=args.optim_probs,
@@ -127,7 +114,7 @@ if __name__ == "__main__":
 
     # problem parameters
     problem_args = parser.add_argument_group("problem arguments")
-    problem_args.add_argument("--optim-probs", type=str, nargs="+", default=["MW"], help=f"optimization problem")
+    problem_args.add_argument("--optim-probs", type=str, nargs="+", default=["MW"], help=f"optimization problem; options: {', '.join(define_objectives().keys())}")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
 
     # genetic algorithm parameters
@@ -144,7 +131,7 @@ if __name__ == "__main__":
     # fmt: on
 
     args = parser.parse_args()
-    print(args)
+    print("Params:", [f"{k}={v}" for k, v in vars(args).items()])
 
     logging.basicConfig(level=logging.INFO)
     main(args)
