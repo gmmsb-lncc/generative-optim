@@ -2,6 +2,13 @@
 Molecular optimization using generative models
 
 ## Installation
+Clone this repository:
+
+```bash
+git clone git@github.com:gmmsb-lncc/generative-optim.git  # ssh
+cd generative-optim
+```
+
 When using the HierVAE model, create a virtual environment with **Python 3.8** (latest tested compatible version) and install the dependencies:
 
 ```bash
@@ -13,10 +20,8 @@ python -m pip install -r requirements-hiervae.txt
 ## Usage
 First, initialize a new **aim** repository for tracking experiments (just once):
 ```bash
-cd generative-optim
 aim init
 ```
-
 
 Run the optimization script with the desired arguments:
 ```bash
@@ -24,10 +29,7 @@ python optim.py --help  # show help
 ```
 
 ### Optimization algorithm and problems
-Inside the `optim.py` script, set the desired algorithm for optimization.
-Check available algorithms in the [pymoo documentation page](https://pymoo.org/algorithms/list.html#nb-algorithms-list).
-
-Molecular optimization problems are implemented inside the `problems/{single, multi}` folders.
+Choose from the available optimization algorithms and problems (see --help for more details). Problem target values can be set inside the `optim.py` script.
 
 ## Experiment tracking
 To visualize experiments using **aim UI**, run the following commmand in the terminal:
