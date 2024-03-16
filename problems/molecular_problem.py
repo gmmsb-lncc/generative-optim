@@ -24,7 +24,7 @@ class MolecularProblem(Problem, ABC):
 
     def __init__(
         self,
-        target_value: Union[int, float],
+        target_value: Any,
         n_var: int,
         lbound: float,
         ubound: float,
