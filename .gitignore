@@ -13,6 +13,7 @@ tags
 # other
 .aim
 venv-*
+generated_molecules_run*
 
 
 # Byte-compiled / optimized / DLL files
