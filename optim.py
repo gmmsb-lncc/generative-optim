@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import subprocess
 from dataclasses import dataclass
@@ -13,7 +14,13 @@ from algorithms.callbacks import AimCallback
 from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
 from algorithms.population import Population
 from hgraph.hiervae import HierVAEDecoder
-from problems import MolecularProblem, MolecularWeight, ProblemFactory
+from problems import (
+    MolecularProblem,
+    MolecularWeight,
+    ProblemFactory,
+    QEDProblem,
+    SAScore,
+)
 
 
 def main(args: argparse.Namespace):
@@ -70,17 +77,19 @@ def configure_problem(args: argparse.Namespace):
         problem: MolecularProblem
         target_value: float
 
-    problem_identifiers = {
-        "MolecularWeight": ProblemConfig(MolecularWeight, 100),
+    problems = {
+        "MW": ProblemConfig(MolecularWeight, 800),
+        "QED": ProblemConfig(QEDProblem, 1.0),
+        "SA": ProblemConfig(SAScore, 1.0),
     }
 
     problem_factory = ProblemFactory()
-    for k, v in problem_identifiers.items():
+    for k, v in problems.items():
         problem_factory.register_problem(k, v.problem)
 
     problem = problem_factory.create_problem(
         problem_identifiers=args.optim_probs,
-        targets=[v.target_value for v in problem_identifiers.values()],
+        targets=[problems[p].target_value for p in args.optim_probs],
         n_var=args.num_vars,
         lbound=args.lbound,
         ubound=args.ubound,
@@ -118,7 +127,7 @@ if __name__ == "__main__":
 
     # problem parameters
     problem_args = parser.add_argument_group("problem arguments")
-    problem_args.add_argument("--optim-probs", type=str, nargs="+", default=["MolecularWeight"], help=f"optimization problem")
+    problem_args.add_argument("--optim-probs", type=str, nargs="+", default=["MW"], help=f"optimization problem")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
 
     # genetic algorithm parameters
@@ -135,4 +144,7 @@ if __name__ == "__main__":
     # fmt: on
 
     args = parser.parse_args()
+    print(args)
+
+    logging.basicConfig(level=logging.INFO)
     main(args)

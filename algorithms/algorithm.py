@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Type
 
 from pymoo.algorithms.moo.nsga2 import NSGA2
@@ -29,4 +30,9 @@ class AlgorithmFactory:
                 f"Unknown algorithm type '{algorithm_type}'. "
                 f"Valid types are: {', '.join(self.algorithm_map.keys())}"
             )
+
+        if algorithm_type == "NSGA2" and "selection" in kwargs:
+            kwargs.pop("selection", None)
+            logging.info("Popping selection from kwargs for NSGA2!")
+
         return self.algorithm_map[algorithm_type](*args, **kwargs)
