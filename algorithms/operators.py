@@ -1,12 +1,14 @@
 import numpy as np
 from pymoo.core.mutation import Mutation
-from pymoo.core.variable import Real, get
+from pymoo.core.variable import get
+from pymoo.operators.crossover.pntx import PointCrossover
 from pymoo.operators.repair.bounds_repair import repair_random_init
+from pymoo.operators.selection.tournament import TournamentSelection
 
-__all__ = ["GaussianMutationFix"]
+__all__ = ["GaussianMutation_", "BinaryTournament", "PointCrossover"]
 
 
-class GaussianMutationFix(Mutation):
+class GaussianMutation_(Mutation):
     def __init__(self, sigma, prob, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sigma = sigma
@@ -26,7 +28,7 @@ class GaussianMutationFix(Mutation):
         _xu = np.repeat(xu[None, :], population.shape[0], axis=0)[mut]
         sigma = sigma[:, None].repeat(n_var, axis=1)[mut]
 
-        mutated_pop[mut] = np.random.normal(population[mut], sigma * abs(_xu - _xl))
+        mutated_pop[mut] = np.random.normal(population[mut], sigma * _xu - _xl)
         mutated_pop = repair_random_init(mutated_pop, population, xl, xu)
 
         return mutated_pop
@@ -40,3 +42,19 @@ class GaussianMutationFix(Mutation):
         )
 
         return mutated_pop
+
+
+class BinaryTournament(TournamentSelection):
+    def __init__(self, *args, **kwargs):
+        super().__init__(pressure=2, func_comp=self.func_comp, *args, **kwargs)
+
+    def func_comp(self, population, tournaments_idxs: np.ndarray, *args, **kwargs):
+        n_tournaments, n_parents = tournaments_idxs.shape
+
+        # res = np.full(n_tournaments, np.inf)
+        res = np.full(n_tournaments, -1, dtype=np.int)
+        for t in range(n_tournaments):
+            a, b = tournaments_idxs[t]
+            res[t] = a if population[a].F < population[b].F else b
+
+        return res
