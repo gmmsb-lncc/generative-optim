@@ -1,37 +1,33 @@
 import argparse
 import os
 import subprocess
+from dataclasses import dataclass
 
 import aim
 from aim import Run
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.algorithms.soo.nonconvex.ga import GA
-from pymoo.operators.crossover.pntx import PointCrossover
+from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
 
-from algorithms import AimCallback
-from algorithms.genetic import BinaryTournament, GaussianMutationFix, Population
-from problems import *
+from algorithms import AlgorithmFactory
+from algorithms.callbacks import AimCallback
+from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
+from algorithms.population import Population
+from hgraph.hiervae import HierVAEDecoder
+from problems import MolecularProblem, MolecularWeight, ProblemFactory
 
 
 def main(args: argparse.Namespace):
-    problem = eval(args.optim_prob)(
-        args.prop_targets,
-        n_var=args.num_vars,
-        xl=args.lbound,
-        xu=args.ubound,
-        decoder=args.decoder,
-    )
-
+    problem = configure_problem(args)
     population = Population(
         args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
     )
-
     xover = PointCrossover(prob=args.xover_prob, n_points=args.xover_points)
-    mutation = GaussianMutationFix(sigma=args.mutation_sigma, prob=args.mutation_prob)
+    mutation = GaussianMutation_(sigma=args.mutation_sigma, prob=args.mutation_prob)
     selection = BinaryTournament()
 
-    algorithm = GA(
+    algorithm_factory = AlgorithmFactory()
+    algorithm = algorithm_factory.create_algorithm(
+        algorithm_type=args.algorithm,
         pop_size=args.population_size,
         sampling=population.initialize(),
         selection=selection,
@@ -39,36 +35,59 @@ def main(args: argparse.Namespace):
         mutation=mutation,
     )
 
-    # algorithm = NSGA2(
-    #     pop_size=args.population_size,
-    #     sampling=population,
-    #     crossover=xover,
-    #     mutation=mutation,
-    # )
-
-    # setup callback
-    run = Run(experiment=args.experiment)
-    args.algorithm = algorithm.__class__.__name__
-    args.git_hash = _get_git_revision_hash()
-    run["hparams"] = vars(args)
-    run.track(_get_this_file(), name="script")
-
-    # begin optimization
     termination_criteria = ("n_gen", args.max_gens)
+    run = configure_callback(args, algorithm)
     result = minimize(
         problem=problem,
         algorithm=algorithm,
         termination=termination_criteria,
         seed=args.seed,
         verbose=args.verbose,
-        callback=AimCallback(run, problem, args),
+        callback=AimCallback(run, n_obj=len(args.optim_probs)),
     )
 
     # export final population
-    chroms = result.pop.get("X")
+    individuals = result.pop.get("X")
     population.export_population(
-        chroms, f"generated_molecules_run={run.hash}_exp={args.experiment}.txt"
+        individuals,
+        f"generated_molecules_run={run.hash}.txt",
+        HierVAEDecoder(),
     )
+
+
+def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
+    run = Run(experiment=args.experiment)
+    args.algorithm = algorithm.__class__.__name__
+    args.git_hash = _get_git_revision_hash()
+    run["hparams"] = vars(args)
+    run.track(_get_this_file(), name="script")
+    return run
+
+
+def configure_problem(args: argparse.Namespace):
+    @dataclass
+    class ProblemConfig:
+        problem: MolecularProblem
+        target_value: float
+
+    problem_identifiers = {
+        "MolecularWeight": ProblemConfig(MolecularWeight, 100),
+    }
+
+    problem_factory = ProblemFactory()
+    for k, v in problem_identifiers.items():
+        problem_factory.register_problem(k, v.problem)
+
+    problem = problem_factory.create_problem(
+        problem_identifiers=args.optim_probs,
+        targets=[v.target_value for v in problem_identifiers.values()],
+        n_var=args.num_vars,
+        lbound=args.lbound,
+        ubound=args.ubound,
+        decoder=HierVAEDecoder(),
+    )
+
+    return problem
 
 
 def _get_git_revision_hash() -> str:
@@ -85,7 +104,7 @@ def _get_this_file() -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        "single-objective optimization",
+        "Multi- and many-objective optimization in generative chemistry model latent spaces.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -99,13 +118,12 @@ if __name__ == "__main__":
 
     # problem parameters
     problem_args = parser.add_argument_group("problem arguments")
-    problem_args.add_argument("--prop-targets", type=float, help="molecular property target value, can be multiple", nargs="+", required=True)
-    problem_args.add_argument("--optim-prob", type=str, default="MolecularWeight", help="optimization problem")
+    problem_args.add_argument("--optim-probs", type=str, nargs="+", default=["MolecularWeight"], help=f"optimization problem")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
-    problem_args.add_argument("--decoder", type=str, default="HierVAEDecoder", help="decoder model")
 
     # genetic algorithm parameters
     ga_args = parser.add_argument_group("genetic algorithm arguments")
+    ga_args.add_argument("--algorithm", type=str, default="GA", help=f"algorithm type; options: {', '.join(AlgorithmFactory.algorithm_map.keys())}")
     ga_args.add_argument("--population-size", type=int, default=40, help="population size")
     ga_args.add_argument("--num-offspring", type=int, default=None, help="number of offspring")
     ga_args.add_argument("--mutation-sigma", type=float, default=0.01, help="gaussian mutation strength")
