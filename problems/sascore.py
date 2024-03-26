@@ -34,8 +34,8 @@ class SAScore(MolecularProblem):
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:
         """Calculates the fitness of a list of molecules based on the target value."""
         mols = [Chem.MolFromSmiles(m) for m in mols]
-        mws = np.array([calculateScore(mol) for mol in mols])
-        fitness = np.square(mws - self.target)
+        scores = np.array([calculateScore(mol) for mol in mols])
+        fitness = np.square(scores - self.target)
         return fitness
 
     def _evaluate(self, x, out, *args, **kwargs):

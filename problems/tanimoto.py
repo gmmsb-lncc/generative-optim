@@ -21,7 +21,7 @@ class TanimotoSimilarity(MolecularProblem):
 
     def __init__(
         self,
-        target_smiles: str,
+        target_value: str,
         n_var: int,
         lbound: float,
         ubound: float,
@@ -29,8 +29,8 @@ class TanimotoSimilarity(MolecularProblem):
         *args,
         **kwargs
     ):
-        super().__init__(target_smiles, n_var, lbound, ubound, decoder, *args, **kwargs)
-        self.target_mol = Chem.MolFromSmiles(target_smiles)
+        super().__init__(target_value, n_var, lbound, ubound, decoder, *args, **kwargs)
+        self.target_mol = Chem.MolFromSmiles(target_value)
         self.target_fp = AllChem.GetMorganFingerprint(self.target_mol, 2)
 
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:

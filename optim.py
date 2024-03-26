@@ -11,7 +11,8 @@ from pymoo.optimize import minimize
 
 from algorithms import AlgorithmFactory
 from algorithms.callbacks import AimCallback
-from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
+from algorithms.operators import (BinaryTournament, GaussianMutation_,
+                                  PointCrossover)
 from algorithms.population import Population
 from hgraph.hiervae import HierVAEDecoder
 from objectives_conf import define_objectives

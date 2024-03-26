@@ -15,7 +15,7 @@ def setup_molecular_similarity():
 
     target_smiles = "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"  # target molecule (caffeine)
     problem = TanimotoSimilarity(
-        target_smiles=target_smiles, n_var=0, lbound=0, ubound=0, decoder=decoder
+        target_value=target_smiles, n_var=0, lbound=0, ubound=0, decoder=decoder
     )
     return problem
 
