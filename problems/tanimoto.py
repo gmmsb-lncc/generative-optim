@@ -16,7 +16,7 @@ class TanimotoSimProblem(MolecularProblem):
     Optimize the similarity of a molecule to a given target molecule.
 
     Calculate the Tanimoto similarity between the molecular fingerprint of a molecule
-    and the target molecule.
+    and the target molecule (SMILES representation).
     """
 
     def __init__(
@@ -55,7 +55,7 @@ class TanimotoDissimProblem(TanimotoSimProblem):
     Optimize the dissimilarity of a molecule to a given target molecule.
 
     Calculate the Tanimoto dissimilarity between the molecular fingerprint of a molecule
-    and the target molecule.
+    and the target molecule (SMILES representation).
     """
 
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:

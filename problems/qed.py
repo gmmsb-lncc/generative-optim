@@ -14,7 +14,8 @@ __all__ = ["QEDProblem"]
 class QEDProblem(MolecularProblem):
     """Optimize the QED (quantitative estimate of drug-likeness) of a molecule.
 
-    Calculate the abs difference between the QED of a molecule and the target value.
+    Calculate the abs difference between the QED of a molecule and the target value in
+    [0, 1].
     """
 
     def __init__(

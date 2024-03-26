@@ -16,7 +16,7 @@ class SAProblem(MolecularProblem):
     """Optimize the SA (synthetic accessibility) score of a molecule.
 
     Calculate the squared difference between the molecular weight of a molecule and
-    the target value.
+    the target value [1, 10].
     """
 
     def __init__(

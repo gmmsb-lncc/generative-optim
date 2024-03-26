@@ -15,7 +15,7 @@ class MolecularWeightProblem(MolecularProblem):
     """Optimize the molecular weight of a molecule.
 
     Calculate the squared difference between the molecular weight of a molecule and
-    the target value.
+    the target value in [0, inf).
     """
 
     def __init__(
