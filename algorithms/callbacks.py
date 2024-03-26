@@ -27,10 +27,10 @@ class AimCallback(Callback):
 
         for i in range(self.n_obj):
             self.run.track(
-                fitness[:, i].min(), name=f"min_fitness_obj={i+1}", step=n_gen
+                fitness[:, i].min(), name=f"min_fitness_obj_{i+1:02d}", step=n_gen
             )
             self.run.track(
-                fitness[:, i].mean(), name=f"avg_fitness_obj={i+1}", step=n_gen
+                fitness[:, i].mean(), name=f"avg_fitness_obj_{i+1:02d}", step=n_gen
             )
 
         df = pd.DataFrame()
