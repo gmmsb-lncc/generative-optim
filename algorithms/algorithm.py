@@ -36,3 +36,11 @@ class AlgorithmFactory:
             logging.info("Popping selection from kwargs for NSGA2!")
 
         return self.algorithm_map[algorithm_type](*args, **kwargs)
+    
+    @staticmethod
+    def check_algorithm_n_objs(algorithm: Algorithm, n_objs: int) -> None:
+        """Check if number of objs match the algorithm type."""
+        if n_objs > 1 and isinstance(algorithm, GA):
+            raise ValueError(
+                f"GA only supports single-objective optimization, but {n_objs} objectives were provided."
+            )

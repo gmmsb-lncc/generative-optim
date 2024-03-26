@@ -39,6 +39,7 @@ def main(args: argparse.Namespace):
         crossover=xover,
         mutation=mutation,
     )
+    algorithm_factory.check_algorithm_n_objs(algorithm, problem.n_obj)
 
     termination_criteria = ("n_gen", args.max_gens)
     run = configure_callback(args, algorithm)
@@ -95,12 +96,11 @@ def configure_problem(args: argparse.Namespace):
             raise ValueError(f"Objective '{obj['name']}' not found in available objectives: {avail_probs.keys()}")
         
         user_problems[f"{obj['name']}_{obj['target']}"] = (avail_probs[obj["name"]], determine_type(obj["target"]))
+    print("Objectives: ", user_problems)
 
     problem_factory = ProblemFactory()
     for k, v in user_problems.items():
         problem_factory.register_problem(k, v[0])
-
-    print("Objectives: ", user_problems)
 
     problem = problem_factory.create_problem(
         problem_identifiers=list(user_problems.keys()),
