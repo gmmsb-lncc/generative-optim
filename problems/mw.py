@@ -8,10 +8,10 @@ from rdkit.Chem.Descriptors import MolWt
 
 from .molecular_problem import DecoderInterface, MolecularProblem
 
-__all__ = ["MolecularWeight"]
+__all__ = ["MolecularWeightProblem"]
 
 
-class MolecularWeight(MolecularProblem):
+class MolecularWeightProblem(MolecularProblem):
     """Optimize the molecular weight of a molecule.
 
     Calculate the squared difference between the molecular weight of a molecule and

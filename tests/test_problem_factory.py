@@ -1,12 +1,12 @@
 import pytest
 
 from problems import MolecularProblem, ProblemFactory
-from problems.mw import MolecularWeight
+from problems.mw import MolecularWeightProblem
 
 
 def test_problem_factory_creation():
     factory = ProblemFactory()
-    factory.problem_map = {"MW": MolecularWeight}
+    factory.problem_map = {"MW": MolecularWeightProblem}
 
     # test with valid identifiers
     problem = factory.create_problem(
@@ -34,7 +34,7 @@ def test_problem_factory_creation():
 
 def test_problem_registration():
     factory = ProblemFactory()
-    factory.register_problem("MW", MolecularWeight)
+    factory.register_problem("MW", MolecularWeightProblem)
 
     # test with valid identifiers
     problem = factory.create_problem(
@@ -49,4 +49,4 @@ def test_problem_registration():
 
     # test duplicate registration
     with pytest.raises(ValueError) as exc_info:
-        factory.register_problem("MW", MolecularWeight)
+        factory.register_problem("MW", MolecularWeightProblem)

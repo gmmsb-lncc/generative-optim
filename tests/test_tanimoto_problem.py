@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from problems.tanimoto import TanimotoSimilarity
+from problems.tanimoto import TanimotoSimProblem
 
 
 class MockDecoder:
@@ -14,7 +14,7 @@ def setup_molecular_similarity():
     decoder = MockDecoder()
 
     target_smiles = "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"  # target molecule (caffeine)
-    problem = TanimotoSimilarity(
+    problem = TanimotoSimProblem(
         target_value=target_smiles, n_var=0, lbound=0, ubound=0, decoder=decoder
     )
     return problem

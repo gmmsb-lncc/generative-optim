@@ -85,8 +85,8 @@ class CompositeProblem(Problem):
         lbound: float,
         ubound: float,
     ):
-        n_obj = len(problems)
-        super().__init__(n_var=n_var, n_obj=n_obj, xl=lbound, xu=ubound)
+        self.n_obj = len(problems)
+        super().__init__(n_var=n_var, n_obj=self.n_obj, xl=lbound, xu=ubound)
         self.problems = problems
 
     def _evaluate(
@@ -134,7 +134,7 @@ class ProblemFactory:
                 "Length of problem_identifiers and targets must be equal. "
                 f"Got {len(problem_identifiers)} and {len(targets)} respectively."
             )
-
+        
         problems = [
             self.problem_map[pid](
                 target_value=target,

@@ -8,10 +8,10 @@ from rdkit.DataStructs import BulkTanimotoSimilarity
 
 from .molecular_problem import DecoderInterface, MolecularProblem
 
-__all__ = ["TanimotoSimilarity"]
+__all__ = ["TanimotoSimProblem"]
 
 
-class TanimotoSimilarity(MolecularProblem):
+class TanimotoSimProblem(MolecularProblem):
     """
     Optimize the similarity of a molecule to a given target molecule.
 

@@ -4,7 +4,7 @@ from rdkit import Chem
 from rdkit.Chem.Descriptors import MolWt
 
 from hgraph.hiervae import HierVAEDecoder
-from problems.mw import MolecularWeight
+from problems.mw import MolecularWeightProblem
 
 
 def test_fitness_func():
@@ -12,7 +12,7 @@ def test_fitness_func():
     out = {}
     target = 1
     decoder = HierVAEDecoder()
-    problem = MolecularWeight(target, 32, -1, 1, decoder)
+    problem = MolecularWeightProblem(target, 32, -1, 1, decoder)
 
     smiles = problem.decode_population(X)
     mols = [Chem.MolFromSmiles(s) for s in smiles]

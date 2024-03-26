@@ -9,10 +9,10 @@ from utils.sa_score import calculateScore
 
 from .molecular_problem import DecoderInterface, MolecularProblem
 
-__all__ = ["SAScore"]
+__all__ = ["SAProblem"]
 
 
-class SAScore(MolecularProblem):
+class SAProblem(MolecularProblem):
     """Optimize the SA (synthetic accessibility) score of a molecule.
 
     Calculate the squared difference between the molecular weight of a molecule and
