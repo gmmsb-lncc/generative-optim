@@ -9,4 +9,5 @@ __all__ = [
     "QEDProblem",
     "SAProblem",
     "TanimotoSimProblem",
+    "TanimotoDissimProblem",
 ]
