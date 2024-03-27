@@ -14,8 +14,7 @@ from pymoo.optimize import minimize
 import problems
 from algorithms import AlgorithmFactory
 from algorithms.callbacks import AimCallback
-from algorithms.operators import (BinaryTournament, GaussianMutation_,
-                                  PointCrossover)
+from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
 from algorithms.population import Population
 from hgraph.hiervae import HierVAEDecoder
 from problems.molecular_problem import ProblemFactory
@@ -56,12 +55,12 @@ def main(args: argparse.Namespace):
     individuals = result.pop.get("X")
     population.export_population(
         individuals,
-        f"generated_molecules_run={run.hash}.txt",
+        f"generated_mols/generated_molecules_run={run.hash}.txt",
         HierVAEDecoder(),
     )
     # track final population
-    with open(f"generated_molecules_run={run.hash}.txt", "r") as f:
-        run.track(aim.Text(f.read()), name="final_population")
+    with open(f"generated_mols/generated_molecules_run={run.hash}.txt", "r") as f:
+        run.track(aim.Text(f.read()), name="solutions")
 
 
 def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
@@ -76,10 +75,7 @@ def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
 
 def configure_problem(args: argparse.Namespace):
 
-    avail_probs = {
-        p: getattr(problems, p)
-        for p in problems.__all__
-    }
+    avail_probs = {p: getattr(problems, p) for p in problems.__all__}
 
     def determine_type(target):
         try:
@@ -93,9 +89,14 @@ def configure_problem(args: argparse.Namespace):
     user_problems = {}
     for obj in objs["objectives"]:  # name, target
         if obj["name"] not in avail_probs:
-            raise ValueError(f"Objective '{obj['name']}' not found in available objectives: {avail_probs.keys()}")
-        
-        user_problems[f"{obj['name']}_{obj['target']}"] = (avail_probs[obj["name"]], determine_type(obj["target"]))
+            raise ValueError(
+                f"Objective '{obj['name']}' not found in available objectives: {avail_probs.keys()}"
+            )
+
+        user_problems[f"{obj['name']}_{obj['target']}"] = (
+            avail_probs[obj["name"]],
+            determine_type(obj["target"]),
+        )
     print("Objectives: ", user_problems)
 
     problem_factory = ProblemFactory()
@@ -104,7 +105,7 @@ def configure_problem(args: argparse.Namespace):
 
     problem = problem_factory.create_problem(
         problem_identifiers=list(user_problems.keys()),
-        targets=[v[1] for v in user_problems.values()],    
+        targets=[v[1] for v in user_problems.values()],
         n_var=args.num_vars,
         lbound=args.lbound,
         ubound=args.ubound,

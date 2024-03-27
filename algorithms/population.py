@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 
@@ -32,6 +34,15 @@ class Population:
         """Writes the final population of SMILES strings to a file."""
         sols = torch.from_numpy(population)
         smiles = decoder.decode(torch.as_tensor(sols, dtype=torch.float32))
+
+        self._ensure_dirs_exist(filename)
         with open(filename, "w") as f:
             for s in smiles:
                 f.write(s + "\n")
+
+    def _ensure_dirs_exist(self, path: str) -> None:
+        """Ensures that the directories in the path exist, otherwise create them."""
+        dirpath = os.path.dirname(path)
+
+        if dirpath:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
