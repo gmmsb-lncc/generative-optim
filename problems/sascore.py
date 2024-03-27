@@ -15,7 +15,7 @@ __all__ = ["SAProblem"]
 class SAProblem(MolecularProblem):
     """Optimize the SA (synthetic accessibility) score of a molecule.
 
-    Calculate the squared difference between the molecular weight of a molecule and
+    Minimize the squared difference between the molecular weight of a molecule and
     the target value [1, 10].
     """
 

@@ -14,7 +14,7 @@ __all__ = ["MolecularWeightProblem"]
 class MolecularWeightProblem(MolecularProblem):
     """Optimize the molecular weight of a molecule.
 
-    Calculate the squared difference between the molecular weight of a molecule and
+    Minimize the squared difference between the molecular weight of a molecule and
     the target value in [0, inf).
     """
 
