@@ -3,10 +3,14 @@ import importlib
 import json
 import logging
 import os
+import random
 import subprocess
 from dataclasses import dataclass
+from typing import Tuple
 
 import aim
+import numpy as np
+import torch
 from aim import Run
 from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
@@ -20,7 +24,8 @@ from hgraph.hiervae import HierVAEDecoder
 from problems.molecular_problem import ProblemFactory
 
 
-def main(args: argparse.Namespace):
+def main(args: argparse.Namespace) -> Run:
+    seed_everything(args.seed)
     problem = configure_problem(args)
     population = Population(
         args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
@@ -63,19 +68,20 @@ def main(args: argparse.Namespace):
     with open(os.path.join(repo, "generated_mols.txt"), "r") as f:
         run.track(aim.Text(f.read()), name="solutions")
 
+    return run
+
 
 def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
     run = Run(experiment=args.experiment)
     args.algorithm = algorithm.__class__.__name__
     args.git_hash = _get_git_revision_hash()
     run["hparams"] = vars(args)
-    run.track(_get_this_file(), name="script")
-    run.track(_get_objectives_conf_file(args), name="objs_conf")
+    for file, filename in _get_files(args):
+        run.track(file, name=filename)
     return run
 
 
 def configure_problem(args: argparse.Namespace):
-
     avail_probs = {p: getattr(problems, p) for p in problems.__all__}
 
     def determine_type(target):
@@ -120,17 +126,21 @@ def _get_git_revision_hash() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
 
 
-def _get_this_file() -> None:
-    this_file = os.path.abspath(__file__)
-    with open(this_file, "r") as f:
-        file = aim.Text(f.read())
-    return file
+def _get_files(args: argparse.Namespace) -> Tuple[aim.Text, str]:
+    files_to_track = [args.objs_file, os.path.abspath(__file__)]
+
+    files = []
+    for file in files_to_track:
+        with open(file, "r") as f:
+            file = aim.Text(f.read())
+            files.append(file)
+    return [(file, filename) for file, filename in zip(files, files_to_track)]
 
 
-def _get_objectives_conf_file(args) -> None:
-    with open(args.objs_file, "r") as f:
-        file = aim.Text(f.read())
-    return file
+def seed_everything(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
 
 
 if __name__ == "__main__":
