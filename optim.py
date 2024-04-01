@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     # problem parameters
     problem_args = parser.add_argument_group("problem arguments")
-    problem_args.add_argument("--objs-file", type=str, default="objectives.conf.json", help=f"path to objectives configuration file; objectives must be configure inside the conf file. available options: {', '.join(problems.__all__)}")
+    problem_args.add_argument("--objs-file", type=str, default="objectives.conf.json", help=f"path to objectives configuration file; objectives must be configured inside the conf file. available options: {', '.join(problems.__all__)}")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
 
     # genetic algorithm parameters

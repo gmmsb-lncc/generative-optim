@@ -2,8 +2,24 @@
     "_comment": "List of objectives: each with a 'name' (string) and 'target' (number/string). See `optim.py --help` for more info.",
     "objectives": [
         {
+            "name": "QEDProblem",
+            "target": 1
+        },
+        {
+            "name": "SAProblem",
+            "target": 1
+        },
+        {
+            "name": "ComplexityProblem",
+            "target": 0
+        },
+        {
+            "name": "TanimotoSimProblem",
+            "target": "CCCC1=C(C(=CC(=C1)C2=NC(CO2)C(=O)NO)OC)OC"
+        },
+        {
             "name": "TanimotoDissimProblem",
-            "target": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
+            "target": "O=C(NO)[C@@H](Cc1ccc2ccccc2c1)NS(=O)(=O)c1ccc2ccccc2c1"
         }
     ]
 }
