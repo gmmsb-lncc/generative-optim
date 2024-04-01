@@ -39,9 +39,7 @@ class TanimotoSimProblem(MolecularProblem):
         Calculates the similarity of a list of molecules to the target molecule.
         """
         mols_fp = [AllChem.GetMorganFingerprint(Chem.MolFromSmiles(m), 2) for m in mols]
-        similarities = np.array(
-            [BulkTanimotoSimilarity(self.target_fp, [fp])[0] for fp in mols_fp]
-        )
+        similarities = np.array(BulkTanimotoSimilarity(self.target_fp, mols_fp))
 
         # since the objective is to maximize the similarity, we return 1 - similarity
         return 1 - similarities
@@ -65,9 +63,7 @@ class TanimotoDissimProblem(TanimotoSimProblem):
         Calculates the dissimilarity of a list of molecules to the target molecule.
         """
         mols_fp = [AllChem.GetMorganFingerprint(Chem.MolFromSmiles(m), 2) for m in mols]
-        similarities = np.array(
-            [BulkTanimotoSimilarity(self.target_fp, [fp])[0] for fp in mols_fp]
-        )
+        similarities = np.array(BulkTanimotoSimilarity(self.target_fp, mols_fp))
 
         # since the objective is to minimize the similarity, we return the similarity itself
         return similarities

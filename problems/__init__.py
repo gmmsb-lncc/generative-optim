@@ -1,4 +1,5 @@
 from .complexity import *
+from .dice import *
 from .molecular_problem import *
 from .mw import *
 from .qed import *
@@ -9,7 +10,9 @@ __all__ = [
     "MolecularWeightProblem",
     "QEDProblem",
     "SAProblem",
+    "ComplexityProblem",
     "TanimotoSimProblem",
     "TanimotoDissimProblem",
-    "ComplexityProblem",
+    "DiceSimProblem",
+    "DiceDissimProblem",
 ]

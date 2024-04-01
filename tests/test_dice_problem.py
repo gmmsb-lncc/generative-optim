@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
+from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem
 
-from problems.tanimoto import TanimotoDissimProblem, TanimotoSimProblem
+# from problems.tanimoto import TanimotoDissimProblem, TanimotoSimProblem
+from problems.dice import DiceDissimProblem, DiceSimProblem
 
 
 class MockDecoder:
@@ -14,7 +17,7 @@ def setup_molecular_similarity():
     decoder = MockDecoder()
 
     target_smiles = "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"  # target molecule (caffeine)
-    problem = TanimotoSimProblem(
+    problem = DiceSimProblem(
         target_value=target_smiles, n_var=0, lbound=0, ubound=0, decoder=decoder
     )
     return problem
@@ -25,10 +28,25 @@ def setup_molecular_dissimilarity():
     decoder = MockDecoder()
 
     target_smiles = "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
-    problem = TanimotoDissimProblem(
+    problem = DiceDissimProblem(
         target_value=target_smiles, n_var=0, lbound=0, ubound=0, decoder=decoder
     )
     return problem
+
+
+def test_dice_implementation_works():
+    mol1 = "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"  # caffeine
+    mol2 = "CC(=O)Nc1ccccc1"
+
+    mol1_fp = AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(mol1), radius=2)
+    mol2_fp = AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(mol2), radius=2)
+
+    dice_score = DiceSimProblem.bulk_dice_similarity(mol1_fp, [mol2_fp])[0]
+    dice_sim = DataStructs.FingerprintSimilarity(
+        mol1_fp, mol2_fp, metric=DataStructs.DiceSimilarity
+    )
+
+    assert dice_score == pytest.approx(dice_sim, 0.01)
 
 
 def test_evaluate_mols_sim(setup_molecular_similarity):
