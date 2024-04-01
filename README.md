@@ -12,8 +12,8 @@ cd generative-optim
 When using the HierVAE model, create a virtual environment with **Python 3.8** (latest tested compatible version) and install the dependencies:
 
 ```bash
-conda create --prefix ./venv-hiervae python=3.8  # using conda for python 3.8
-conda activate ./venv-hiervae
+conda create --prefix ./venv python=3.8  # using conda for python 3.8
+conda activate ./venv
 python -m pip install -r requirements-hiervae.txt
 ```
 
@@ -40,4 +40,4 @@ aim up
 Then, open the browser at `http://localhost:43800/` to see the experiments.
 
 By default, a checkpoint of the whole population is saved in a `.csv` file inside the `.aim/meta/chunks/{run_hash}/` folder, at the end of each generation.
-
+The final population of generated molecules in saved at `.aim/meta/chunks/{run_hash}/generated_mols.txt`.

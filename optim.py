@@ -52,14 +52,15 @@ def main(args: argparse.Namespace):
     )
 
     # export final population
+    repo = os.path.join(run.repo.path, "meta/chunks", run.hash)
     individuals = result.pop.get("X")
     population.export_population(
         individuals,
-        f"generated_mols/generated_molecules_run={run.hash}.txt",
+        os.path.join(repo, "generated_mols.txt"),
         HierVAEDecoder(),
     )
     # track final population
-    with open(f"generated_mols/generated_molecules_run={run.hash}.txt", "r") as f:
+    with open(os.path.join(repo, "generated_mols.txt"), "r") as f:
         run.track(aim.Text(f.read()), name="solutions")
 
 
