@@ -14,7 +14,6 @@ import torch
 from aim import Run
 from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
-from pymoo.util.ref_dirs import get_reference_directions
 
 import problems
 from algorithms import AlgorithmFactory
@@ -43,9 +42,9 @@ def main(args: argparse.Namespace) -> Run:
         selection=selection,
         crossover=xover,
         mutation=mutation,
-        ref_dirs=get_reference_directions(
-            args.ref_dirs_method, problem.n_obj, args.ref_dirs_n_points
-        ),
+        ref_dirs_method=args.ref_dirs_method,
+        ref_dirs_n_points=args.ref_dirs_n_points,
+        n_objs=problem.n_obj,
     )
     algorithm_factory.check_algorithm_n_objs(algorithm, problem.n_obj)
 
@@ -177,7 +176,7 @@ if __name__ == "__main__":
     ga_args.add_argument("--xover-prob", type=float, default=0.9, help="crossover probability")
     ga_args.add_argument("--ubound", type=float, default=2.5, help="gene value upper bound")
     ga_args.add_argument("--lbound", type=float, default=-2.5, help="gene value lower bound")
-    ga_args.add_argument("--ref-dirs-method", type=str, default="das-dennis", help="reference directions method")
+    ga_args.add_argument("--ref-dirs-method", type=str, default="energy", help="reference directions method")
     ga_args.add_argument("--ref-dirs-n-points", type=int, default=100, help="number of reference directions")
     # fmt: on
 
