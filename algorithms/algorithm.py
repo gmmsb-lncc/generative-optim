@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Type
 
 from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.core.algorithm import Algorithm
 
@@ -11,7 +12,11 @@ __all__ = ["AlgorithmFactory"]
 class AlgorithmFactory:
     """Factory class for creating algorithm instances."""
 
-    algorithm_map: Dict[str, Type[Algorithm]] = {"NSGA2": NSGA2, "GA": GA}
+    algorithm_map: Dict[str, Type[Algorithm]] = {
+        "GA": GA,
+        "NSGA2": NSGA2,
+        "NSGA3": NSGA3,
+    }
 
     def register_algorithm(
         self, algorithm_type: str, algorithm_class: Type[Algorithm]
@@ -31,12 +36,12 @@ class AlgorithmFactory:
                 f"Valid types are: {', '.join(self.algorithm_map.keys())}"
             )
 
-        if algorithm_type == "NSGA2" and "selection" in kwargs:
+        if algorithm_type in ("NSGA2", "NSGA3") and "selection" in kwargs:
             kwargs.pop("selection", None)
-            logging.info("Popping selection from kwargs for NSGA2!")
+            logging.info("Popping selection from kwargs for NSGA2/NSGA3!")
 
         return self.algorithm_map[algorithm_type](*args, **kwargs)
-    
+
     @staticmethod
     def check_algorithm_n_objs(algorithm: Algorithm, n_objs: int) -> None:
         """Check if number of objs match the algorithm type."""
