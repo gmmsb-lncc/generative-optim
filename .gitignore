@@ -14,8 +14,9 @@ tags
 .aim
 venv-*
 generated_molecules_run*
-notebooks/
 generated_mols/
+objectives.conf.*.json
+notebooks/
 
 
 # Byte-compiled / optimized / DLL files
