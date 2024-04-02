@@ -30,10 +30,15 @@ class MolecularWeightProblem(MolecularProblem):
     ):
         super().__init__(target_value, n_var, lbound, ubound, decoder, *args, **kwargs)
 
-    def evaluate_mols(self, mols: List[str]) -> np.ndarray:
-        """Calculates the fitness of a list of molecules based on the target value."""
+    def calculate_property(self, mols: List[str]) -> np.ndarray:
+        """Calculates the molecular weight of a list of molecules."""
         mols = [Chem.MolFromSmiles(m) for m in mols]
         mws = np.array([MolWt(mol) for mol in mols])
+        return mws
+
+    def evaluate_mols(self, mols: List[str]) -> np.ndarray:
+        """Calculates the fitness of a list of molecules based on the target value."""
+        mws = self.calculate_property(mols)
         fitness = np.square(mws - self.target)
         return fitness
 

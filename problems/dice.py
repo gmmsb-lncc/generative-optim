@@ -65,7 +65,7 @@ class DiceSimProblem(MolecularProblem):
 
         return dice_scores
 
-    def evaluate_mols(self, mols: List[str]) -> np.ndarray:
+    def calculate_property(self, mols: List[str]) -> np.ndarray:
         """
         Calculates the similarity of a list of molecules to the target molecule.
         """
@@ -75,6 +75,13 @@ class DiceSimProblem(MolecularProblem):
         ]
         similarities = self.bulk_dice_similarity(self.target_fp, mols_fp)
 
+        return similarities
+
+    def evaluate_mols(self, mols: List[str]) -> np.ndarray:
+        """
+        Calculates the similarity of a list of molecules to the target molecule.
+        """
+        similarities = self.calculate_property(mols)
         # since the objective is to maximize the similarity, we return 1 - similarity
         return 1 - similarities
 
@@ -96,11 +103,6 @@ class DiceDissimProblem(DiceSimProblem):
         """
         Calculates the dissimilarity of a list of molecules to the target molecule.
         """
-        mols_fp = [
-            AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(m), 2)
-            for m in mols
-        ]
-        similarities = self.bulk_dice_similarity(self.target_fp, mols_fp)
-
+        similarities = self.calculate_property(mols)
         # since the objective is to minimize the similarity, we return the similarity itself
         return similarities

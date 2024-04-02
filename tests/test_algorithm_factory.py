@@ -15,9 +15,9 @@ def test_successful_algorithm_creation():
 
 def test_dynamic_registration_and_creation():
     factory = AlgorithmFactory()
-    factory.register_algorithm("NSGA3", NSGA3)
-    nsga3_instance = factory.create_algorithm("NSGA3", ref_dirs=np.random.rand(100, 3))
-    assert isinstance(nsga3_instance, NSGA3), "NSGA3 instance not created correctly."
+    factory.register_algorithm("NSGA3_", NSGA3)
+    nsga3_instance = factory.create_algorithm("NSGA3_", ref_dirs=np.random.rand(100, 3))
+    assert isinstance(nsga3_instance, NSGA3), "NSGA3_ instance not created correctly."
 
 
 def test_duplicate_registration():

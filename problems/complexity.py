@@ -30,9 +30,14 @@ class ComplexityProblem(MolecularProblem):
     ):
         super().__init__(target_value, n_var, lbound, ubound, decoder, *args, **kwargs)
 
+    def calculate_property(self, mols: List[str]) -> np.ndarray:
+        """Calculates the Bottcher score of a list of molecules."""
+        scores = np.array([calculate_bottchscore_from_smiles(m) for m in mols])
+        return scores
+
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:
         """Calculates the fitness of a list of molecules based on the target value."""
-        scores = np.array([calculate_bottchscore_from_smiles(m) for m in mols])
+        scores = self.calculate_property(mols)
         fitness = np.square(scores - self.target)
         return fitness
 
