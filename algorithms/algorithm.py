@@ -38,23 +38,41 @@ class AlgorithmFactory:
             )
 
         # modify algorithm-specific parameters below
+        #
         if algorithm_type in ("NSGA2", "NSGA3") and "selection" in kwargs:
             kwargs.pop("selection", None)
             logging.info("Popping selection from kwargs for NSGA2/NSGA3!")
 
+        # NSGA3 requires reference directions to be provided
         if algorithm_type == "NSGA3":
-            # NSGA3 requires reference directions
-            if "ref_dirs_method" not in kwargs or "ref_dirs_n_points" not in kwargs:
+            if "ref_dirs_method" not in kwargs:
                 raise ValueError("NSGA3 requires reference directions to be provided.")
 
-            kwargs["ref_dirs"] = get_reference_directions(
-                kwargs["ref_dirs_method"],
-                kwargs["n_objs"],
-                kwargs["ref_dirs_n_points"],
-            )
-            logging.info(
-                f"Using method={kwargs['ref_dirs_method']} and n_points={kwargs['ref_dirs_n_points']} for ref_dirs!"
-            )
+            if kwargs["ref_dirs_method"] == "energy":
+                kwargs["ref_dirs"] = get_reference_directions(
+                    kwargs["ref_dirs_method"],
+                    kwargs["n_objs"],
+                    kwargs["ref_dirs_n_points"],
+                )
+                logging.info(
+                    f"Using method={kwargs['ref_dirs_method']} and n_points={kwargs['ref_dirs_n_points']} for ref_dirs!"
+                )
+            elif kwargs["ref_dirs_method"] == "uniform":
+                kwargs["ref_dirs"] = get_reference_directions(
+                    kwargs["ref_dirs_method"],
+                    kwargs["n_objs"],
+                    n_partitions=kwargs["ref_dirs_n_partitions"],
+                )
+                logging.info(
+                    f"Using method={kwargs['ref_dirs_method']} and n_partitions={kwargs['ref_dirs_n_partitions']} for ref_dirs!"
+                )
+            else:
+                raise ValueError(
+                    f"Unknown ref_dirs_method '{kwargs['ref_dirs_method']}'. "
+                    f"Valid methods are: 'energy', 'uniform' so far."
+                )
+        #
+        #
 
         return self.algorithm_map[algorithm_type](*args, **kwargs)
 

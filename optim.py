@@ -44,6 +44,7 @@ def main(args: argparse.Namespace) -> Run:
         mutation=mutation,
         ref_dirs_method=args.ref_dirs_method,
         ref_dirs_n_points=args.ref_dirs_n_points,
+        ref_dirs_n_partitions=args.ref_dirs_n_partitions,
         n_objs=problem.n_obj,
     )
     algorithm_factory.check_algorithm_n_objs(algorithm, problem.n_obj)
@@ -178,6 +179,7 @@ if __name__ == "__main__":
     ga_args.add_argument("--lbound", type=float, default=-2.5, help="gene value lower bound")
     ga_args.add_argument("--ref-dirs-method", type=str, default="energy", help="reference directions method")
     ga_args.add_argument("--ref-dirs-n-points", type=int, default=100, help="number of reference directions")
+    ga_args.add_argument("--ref-dirs-n-partitions", type=int, default=6, help="number of partitions")
     # fmt: on
 
     args = parser.parse_args()
