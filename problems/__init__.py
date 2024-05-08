@@ -1,3 +1,4 @@
+from .aggregated import *
 from .complexity import *
 from .dice import *
 from .molecular_problem import *
@@ -15,4 +16,6 @@ __all__ = [
     "TanimotoDissimProblem",
     "DiceSimProblem",
     "DiceDissimProblem",
+    "CxQEDSAProblem",
+    "CxQEDSASimDissimProblem",
 ]

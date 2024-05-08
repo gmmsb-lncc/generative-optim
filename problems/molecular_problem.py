@@ -31,6 +31,8 @@ class MolecularProblem(Problem, ABC):
         decoder: DecoderInterface,
         n_constr: int = 0,
         n_obj: int = 1,
+        *args: Any,
+        **kwargs: Any,
     ):
         super().__init__(
             n_var=n_var, n_obj=n_obj, n_constr=n_constr, xl=lbound, xu=ubound
@@ -119,6 +121,7 @@ class ProblemFactory:
         lbound: float,
         ubound: float,
         decoder: DecoderInterface,
+        weights: List[float] = None,
     ) -> Union[MolecularProblem, CompositeProblem]:
         """Create a problem instance based on the given problem identifiers."""
 
@@ -134,7 +137,7 @@ class ProblemFactory:
                 "Length of problem_identifiers and targets must be equal. "
                 f"Got {len(problem_identifiers)} and {len(targets)} respectively."
             )
-        
+
         problems = [
             self.problem_map[pid](
                 target_value=target,
@@ -142,6 +145,7 @@ class ProblemFactory:
                 lbound=lbound,
                 ubound=ubound,
                 decoder=decoder,
+                weights=weights,
             )
             for pid, target in zip(problem_identifiers, targets)
         ]
