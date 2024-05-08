@@ -44,6 +44,7 @@ def main(args: argparse.Namespace) -> Run:
         mutation=mutation,
         ref_dirs_method=args.ref_dirs_method,
         ref_dirs_n_points=args.ref_dirs_n_points,
+        ref_dirs_n_partitions=args.ref_dirs_n_partitions,
         n_objs=problem.n_obj,
     )
     algorithm_factory.check_algorithm_n_objs(algorithm, problem.n_obj)
@@ -120,6 +121,7 @@ def configure_problem(args: argparse.Namespace):
         lbound=args.lbound,
         ubound=args.ubound,
         decoder=HierVAEDecoder(),
+        weights=args.weights,
     )
 
     return problem
@@ -164,6 +166,7 @@ if __name__ == "__main__":
     problem_args = parser.add_argument_group("problem arguments")
     problem_args.add_argument("--objs-file", type=str, default="objectives.conf.json", help=f"path to objectives configuration file; objectives must be configured inside the conf file. available options: {', '.join(problems.__all__)}")
     problem_args.add_argument("--num-vars", type=int, default=32, help="number of variables")
+    problem_args.add_argument("--weights", type=float, nargs="+", default=None, help="weights for the objectives in the aggregation problem")
 
     # genetic algorithm parameters
     ga_args = parser.add_argument_group("genetic algorithm arguments")
@@ -178,6 +181,7 @@ if __name__ == "__main__":
     ga_args.add_argument("--lbound", type=float, default=-2.5, help="gene value lower bound")
     ga_args.add_argument("--ref-dirs-method", type=str, default="energy", help="reference directions method")
     ga_args.add_argument("--ref-dirs-n-points", type=int, default=100, help="number of reference directions")
+    ga_args.add_argument("--ref-dirs-n-partitions", type=int, default=6, help="number of partitions")
     # fmt: on
 
     args = parser.parse_args()
