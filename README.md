@@ -28,6 +28,8 @@ Run the optimization script with the desired arguments:
 python optim.py --help  # show help
 ```
 
+See the `runs-example.sh` script for an example of how to run the optimization script.
+
 ### Optimization algorithm and problems
 Choose from the available optimization algorithms and problems (see `--help` for more details). Objectives are defined in the `objectives.conf.json` file.
 
