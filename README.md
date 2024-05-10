@@ -45,4 +45,4 @@ By default, a checkpoint of the whole population is saved in a `.csv` file insid
 The final population of generated molecules is saved at `.aim/meta/chunks/{run_hash}/generated_mols.txt`.
 
 ## Citing
-> Matheus Müller Pereira da Silva, Jaqueline da Silva Angelo, Isabella Alvim Guedes, and Laurent Emmanuel Dardenne. 2024. A Generative Evolutionary Many-Objective Framework: A Case Study in Antimicrobial Agent Design. In _Genetic and Evolutionary Computation Conference (GECCO ’24 Compan- ion), July 14–18, 2024, Melbourne, VIC, Australia_. ACM, New York, NY, USA, 9 pages. https://doi.org/10.1145/3638530.3664159
+> Matheus Müller Pereira da Silva, Jaqueline da Silva Angelo, Isabella Alvim Guedes, and Laurent Emmanuel Dardenne. 2024. A Generative Evolutionary Many-Objective Framework: A Case Study in Antimicrobial Agent Design. In _Genetic and Evolutionary Computation Conference (GECCO ’24 Companion), July 14–18, 2024, Melbourne, VIC, Australia_. ACM, New York, NY, USA, 9 pages. https://doi.org/10.1145/3638530.3664159
