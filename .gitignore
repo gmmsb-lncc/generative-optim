@@ -17,7 +17,8 @@ generated_molecules_run*
 generated_mols/
 objectives.conf.*.json
 notebooks/
-
+diamante-01/
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
