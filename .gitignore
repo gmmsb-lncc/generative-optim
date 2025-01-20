@@ -9,6 +9,15 @@
 _tmp*
 tmp*
 tags
+openbabel/
+maeparser/
+dockthor-suite/
+coordgenlibs/
+*.pdb
+*.mol2
+*.top
+*.in
+
 
 # other
 .aim
