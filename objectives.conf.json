@@ -10,10 +10,6 @@
             "target": 1
         },
         {
-            "name": "ComplexityProblem",
-            "target": 0
-        },
-        {
             "name": "TanimotoSimProblem",
             "target": "CCCC1=C(C(=CC(=C1)C2=NC(CO2)C(=O)NO)OC)OC"
         },

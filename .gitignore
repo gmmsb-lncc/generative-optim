@@ -17,6 +17,7 @@ coordgenlibs/
 *.mol2
 *.top
 *.in
+env-dockthor/
 
 
 # other
