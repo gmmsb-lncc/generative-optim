@@ -18,6 +18,11 @@ coordgenlibs/
 *.top
 *.in
 env-dockthor/
+dockthor-suite/
+maeparser/
+openbabel/
+docktgrid/  
+coordgenlibs/
 
 
 # other
@@ -29,6 +34,7 @@ objectives.conf.*.json
 notebooks/
 diamante-01/
 results/
+results-gecco/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
