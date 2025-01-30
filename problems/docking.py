@@ -1,5 +1,8 @@
 """Optimze the molecular weight of a molecule."""
 
+import os
+import random
+import string
 import subprocess
 from multiprocessing import Pool
 from typing import Any, List
@@ -99,18 +102,38 @@ class DockingProblem(MolecularProblem):
 
     def __init__(
         self,
+        receptor_name: str,
+        receptor_path: str,
+        grid_path: str,
         target_value: float,
         n_var: int,
         lbound: float,
         ubound: float,
         decoder: DecoderInterface,
+        run_hash: str = "",
         *args,
         **kwargs,
     ):
         super().__init__(target_value, n_var, lbound, ubound, decoder, *args, **kwargs)
+        self.n_evals = 0
+        self.receptor_name = receptor_name
+        self.receptor_path = receptor_path
+        self.grid_path = grid_path
+        self.docktdeep_weights = "utils/docktdeep-weights.ckpt"
+        self.run_hash = run_hash
+        self.docking_dir = self.mk_docking_dir()
+
+    def mk_docking_dir(self):
+        """Create a new directory for storing docking files."""
+        dir = os.path.join("dockings", self.run_hash, self.receptor_name)
+        if not dir:
+            return ""  # no directory specified
+
+        os.makedirs(dir, exist_ok=True)
+        return dir
 
     def convert_smiles_to_pdb(
-        self, smiles_list: List[str], output_files: List[str]
+        self, smiles_list: List[str], output_files: List[str], root_dir: str = ""
     ) -> None:
         """
         Convert a list of SMILES strings to PDB files with 3D coordinates generated using RDKit's ETKDG method.
@@ -119,21 +142,33 @@ class DockingProblem(MolecularProblem):
             smiles_list (list): List of SMILES strings to convert
             output_files (list): List of output file paths
         """
+        if root_dir:
+            output_files = [os.path.join(root_dir, f) for f in output_files]
 
         for smi, out_path in zip(smiles_list, output_files):
             mol = Chem.MolFromSmiles(smi)
             if mol is None:
-                raise ValueError(f"Failed to convert SMILES to molecule: {smi}")
+                raise ValueError(f"Invalid SMILES: {smi}")
 
-            try:
-                mol = Chem.AddHs(mol)
-                AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
-                Chem.MolToPDBFile(mol, out_path)
+            mol = Chem.AddHs(mol)
+            params = AllChem.ETKDGv3()
+            params.maxAttempts = 1000  # increase number of attempts
+            params.pruneRmsThresh = 0.1  # adjust pruning threshold
+            params.randomSeed = 0xF00D  # set random seed
 
-            except Exception as e:
-                raise ValueError(f"Failed to convert SMILES to PDB: {smi}") from e
+            code = AllChem.EmbedMolecule(mol, params)
+            if code < 0:  # fallback to random coordinates
+                params.useRandomCoords = True
+                code = AllChem.EmbedMolecule(mol, params)
+                if code < 0:
+                    raise ValueError(f"3D embedding failed for SMILES: {smi}")
 
-    def run_mmffligand_parallel(self, file_paths: List[str]) -> List[Any]:
+            # AllChem.UFFOptimizeMolecule(mol)
+            Chem.MolToPDBFile(mol, out_path)
+
+    def run_mmffligand_parallel(
+        self, file_paths: List[str], root_dir: str = ""
+    ) -> List[Any]:
         """
         Executes 'mmffligand -l <file>' for each file in parallel using all CPU cores.
 
@@ -143,6 +178,8 @@ class DockingProblem(MolecularProblem):
         Returns:
             list: Tuples of (file_path, success_status, error_message)
         """
+        if root_dir:
+            file_paths = [os.path.join(root_dir, f) for f in file_paths]
 
         with Pool() as pool:
             results = pool.map(_process_mmff_file, file_paths)
@@ -150,7 +187,12 @@ class DockingProblem(MolecularProblem):
         return results
 
     def run_dockthor_parallel(
-        self, file_paths: List[str], output_dir: str, receptor_path: str, grid_path: str
+        self,
+        file_paths: List[str],
+        output_dir: str,
+        receptor_path: str,
+        grid_path: str,
+        root_dir: str = "",
     ) -> List[Any]:
         """
         Executes a sigle docking run with 'dockthor -r <receptor> -l <ligand> -o <output_dir>' for each file in parallel using all CPU cores.
@@ -162,6 +204,8 @@ class DockingProblem(MolecularProblem):
         Returns:
             list: Tuples of (file_path, success_status, error_message)
         """
+        if root_dir:
+            file_paths = [os.path.join(root_dir, f) for f in file_paths]
 
         with Pool() as pool:
             results = pool.starmap(
@@ -202,13 +246,18 @@ class DockingProblem(MolecularProblem):
         with open(output_file, "w") as f:
             f.writelines(lines[start:end] if end else lines[start:])
 
-    def prepare_docktdeep_input(self, file_paths: List[str]) -> None:
+    def prepare_docktdeep_input(
+        self, file_paths: List[str], root_dir: str = ""
+    ) -> None:
         """
         Prepare input files for docktdeep by extracting the first molecule from each mol2 file from dockthor's output.
 
         Args:
             file_paths (list): List of PDB file paths to process
         """
+        if root_dir:
+            file_paths = [os.path.join(root_dir, f) for f in file_paths]
+
         for file in file_paths:
             self.get_first_molecule(file)
 
@@ -220,24 +269,68 @@ class DockingProblem(MolecularProblem):
         batch_size: int = 32,
         root_dir: str = "",
     ) -> np.ndarray:
-        self.prepare_docktdeep_input(ligand_paths)
+        # self.prepare_docktdeep_input(ligand_paths, root_dir)
         dataset = docktdeep.get_dataset(
             protein_files=[receptor_path] * len(ligand_paths),
-            ligand_files=ligand_paths,
-            root_dir=root_dir,
+            ligand_files=[os.path.join(root_dir, f) for f in ligand_paths],
+            root_dir="",
         )
         model = docktdeep.get_model(ckpt_path)
         preds = docktdeep.inference(dataset, model, batch_size=batch_size)
 
         return preds
 
+    def generate_file_name_ids(self, n: int, prefix: str) -> List[str]:
+        """Generate random Ids for the file names."""
+        return [f"gen={prefix}chr={i}.pdb" for i in range(n)]
+
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:
         """Calculates the fitness of a list of molecules based on the target value."""
-        pass
 
-    def calculate_property(self, mols: List[str]) -> np.ndarray:
-        """Calculates the QED of a list of molecules."""
-        pass
+        lig_files = self.generate_file_name_ids(len(mols), self.n_evals)
+        self.convert_smiles_to_pdb(mols, lig_files, self.docking_dir)
+        mmff_res = self.run_mmffligand_parallel(lig_files, self.docking_dir)
+
+        for res in mmff_res:  # log errors
+            if not res[1]:
+                print(f"Error in MMFFLigand file {res[0]}: {res[2]}")
+
+        # copy grid to docking dir
+        grid_name = os.path.basename(self.grid_path)
+        grid_path = os.path.join(self.docking_dir, f"{self.receptor_name}_receptor")
+        os.makedirs(grid_path, exist_ok=True)
+        if not os.path.exists(os.path.join(grid_path, grid_name)):
+            subprocess.run(
+                ["cp", self.grid_path, os.path.join(grid_path, grid_name)], check=True
+            )
+
+        dockthor_res = self.run_dockthor_parallel(
+            [f.replace(".pdb", ".top") for f in lig_files],
+            root_dir=self.docking_dir,
+            output_dir=self.docking_dir,
+            receptor_path=self.receptor_path,  # pdb file
+            grid_path=self.grid_path,  # grid file
+        )
+
+        for res in dockthor_res:  # log errors
+            if not res[1]:
+                print(f"Error in DockThor file {res[0]}: {res[2]}")
+
+        self.prepare_docktdeep_input(  # exclude all other molecules from the mol2 files
+            [f.replace(".pdb", "_docked.mol2") for f in lig_files],
+            os.path.join(self.docking_dir, f"{self.receptor_name}_receptor"),
+        )
+
+        preds = self.run_docktdeep_inference(
+            [f.replace(".pdb", "_docked.mol2") for f in lig_files],
+            receptor_path=self.receptor_path,
+            ckpt_path=self.docktdeep_weights,
+            root_dir=os.path.join(self.docking_dir, f"{self.receptor_name}_receptor"),
+        )
+
+        self.n_evals += 1
+        fitness = np.abs(preds - self.target)
+        return fitness
 
     def _evaluate(self, x, out, *args, **kwargs):
         mols = self.decode_population(x)

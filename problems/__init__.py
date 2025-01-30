@@ -1,6 +1,7 @@
 # from .aggregated import *
 # from .complexity import *
 from .dice import *
+from .docking import *
 from .molecular_problem import *
 from .mw import *
 from .qed import *
@@ -18,4 +19,5 @@ __all__ = [
     "DiceDissimProblem",
     # "CxQEDSAProblem",
     # "CxQEDSASimDissimProblem",
+    "DockingProblem",
 ]

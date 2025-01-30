@@ -122,6 +122,10 @@ class ProblemFactory:
         ubound: float,
         decoder: DecoderInterface,
         weights: List[float] = None,
+        receptor_names: List[str] = None,
+        receptor_paths: List[str] = None,
+        grid_paths: List[str] = None,
+        run_hash: str = "",
     ) -> Union[MolecularProblem, CompositeProblem]:
         """Create a problem instance based on the given problem identifiers."""
 
@@ -146,8 +150,14 @@ class ProblemFactory:
                 ubound=ubound,
                 decoder=decoder,
                 weights=weights,
+                receptor_name=receptor_name,
+                receptor_path=receptor_path,
+                grid_path=grid_path,
+                run_hash=run_hash,
             )
-            for pid, target in zip(problem_identifiers, targets)
+            for pid, target, receptor_name, receptor_path, grid_path in zip(
+                problem_identifiers, targets, receptor_names, receptor_paths, grid_paths
+            )
         ]
 
         if len(problems) == 1:

@@ -26,7 +26,8 @@ from problems.molecular_problem import ProblemFactory
 
 def main(args: argparse.Namespace) -> Run:
     seed_everything(args.seed)
-    problem = configure_problem(args)
+    run = configure_callback(args)
+    problem = configure_problem(args, run_hash=run.hash)
     population = Population(
         args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
     )
@@ -48,9 +49,11 @@ def main(args: argparse.Namespace) -> Run:
         n_objs=problem.n_obj,
     )
     algorithm_factory.check_algorithm_n_objs(algorithm, problem.n_obj)
-
+    run["hparams"]["algorithm"] = algorithm.__class__.__name__
     termination_criteria = ("n_gen", args.max_gens)
-    run = configure_callback(args, algorithm)
+
+    # set up run directory for storing generated files, if needed
+    # problem.run_dir = os.path.join(run.repo.path, "meta/chunks", run.hash)
     result = minimize(
         problem=problem,
         algorithm=algorithm,
@@ -75,9 +78,9 @@ def main(args: argparse.Namespace) -> Run:
     return run
 
 
-def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
+def configure_callback(args: argparse.Namespace) -> Run:
     run = Run(experiment=args.experiment)
-    args.algorithm = algorithm.__class__.__name__
+    # args.algorithm = algorithm.__class__.__name__
     args.git_hash = _get_git_revision_hash()
     run["hparams"] = vars(args)
     for file, filename in _get_files(args):
@@ -85,7 +88,7 @@ def configure_callback(args: argparse.Namespace, algorithm: Algorithm) -> Run:
     return run
 
 
-def configure_problem(args: argparse.Namespace):
+def configure_problem(args: argparse.Namespace, run_hash: str) -> ProblemFactory:
     avail_probs = {p: getattr(problems, p) for p in problems.__all__}
 
     def determine_type(target):
@@ -107,6 +110,9 @@ def configure_problem(args: argparse.Namespace):
         user_problems[f"{obj['name']}_{obj['target']}"] = (
             avail_probs[obj["name"]],
             determine_type(obj["target"]),
+            str(obj.get("receptor_name", "")),
+            str(obj.get("receptor_path", "")),
+            str(obj.get("grid_path", "")),
         )
     print("Objectives: ", user_problems)
 
@@ -122,6 +128,10 @@ def configure_problem(args: argparse.Namespace):
         ubound=args.ubound,
         decoder=HierVAEDecoder(),
         weights=args.weights,
+        receptor_names=[v[2] for v in user_problems.values()],
+        receptor_paths=[v[3] for v in user_problems.values()],
+        grid_paths=[v[4] for v in user_problems.values()],
+        run_hash=run_hash,
     )
 
     return problem
