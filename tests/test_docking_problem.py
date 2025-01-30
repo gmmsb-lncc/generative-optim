@@ -20,6 +20,8 @@ def test_smiles_to_pdb_generate_files():
         receptor_name="",
         receptor_path="",
         grid_path="",
+        grid_center=["-1.2415", "-6.9365", "-14.0990"],
+        grid_size=["20", "20", "20"],
     )
     smiles_list = ["CCO", "c1ccccc1", "CN(C)C(=O)N"]
     output_files = ["test1.pdb", "test2.pdb", "test3.pdb"]
@@ -39,6 +41,8 @@ def test_mmffligand_creates_output_files():
         receptor_name="",
         receptor_path="",
         grid_path="",
+        grid_center=["-1.2415", "-6.9365", "-14.0990"],
+        grid_size=["20", "20", "20"],
     )
     smiles_list = ["CCO", "c1ccccc1", "CN(C)C(=O)N"] * 10
     output_files = [f"test{n}.pdb" for n in range(1, 31)]
@@ -62,6 +66,8 @@ def test_dockthor_executes():
         receptor_name="",
         receptor_path="",
         grid_path="",
+        grid_center=["-1.2415", "-6.9365", "-14.0990"],
+        grid_size=["20", "20", "20"],
     )
     smiles_list = ["c1ccccc1", "CN(C)C(=O)N"]
     output_files = ["test1.pdb", "test2.pdb"]
@@ -72,6 +78,8 @@ def test_dockthor_executes():
         output_dir="tests/data",
         receptor_path="tests/data/2ylc_receptor/2ylc_receptor.in",
         grid_path="tests/data/2ylc_receptor/2ylc_receptor.grid",
+        grid_center=["-1.2415", "-6.9365", "-14.0990"],
+        grid_size=["22.000", "22.000", "22.000"],
     )
     assert all(
         [
@@ -115,6 +123,8 @@ def test_get_first_molecule_works():
         receptor_name="",
         receptor_path="",
         grid_path="",
+        grid_center=["-1.2415", "-6.9365", "-14.0990"],
+        grid_size=["20", "20", "20"],
     )
     mol2_path = "tests/data/2ylc_receptor/2ylc_ligand_rnum_maestro_docked.mol2"
     problem.get_first_molecule(mol2_path, "tmp.mol2")
@@ -138,6 +148,8 @@ def test_docktdeep_inference():
         receptor_name="",
         receptor_path="",
         grid_path="",
+        grid_center=["-1.2415", "-6.9365", "-14.0990"],
+        grid_size=["20", "20", "20"],
     )
     ligand_paths = [
         "tests/data/2ylc_receptor/2ylc_ligand_rnum_maestro_docked.mol2",

@@ -19,6 +19,8 @@ def test_problem_factory_creation():
         receptor_names=[""],
         receptor_paths=[""],
         grid_paths=[""],
+        grid_centers=[[""]],
+        grid_sizes=[[""]],
     )
     assert isinstance(problem, MolecularProblem)
 
@@ -34,6 +36,8 @@ def test_problem_factory_creation():
             receptor_names=[""],
             receptor_paths=[""],
             grid_paths=[""],
+            grid_centers=[[""]],
+            grid_sizes=[[""]],
         )
     assert "Unknown problem identifiers: Unknown" in str(exc_info.value)
 
@@ -53,6 +57,8 @@ def test_problem_registration():
         receptor_names=[""],
         receptor_paths=[""],
         grid_paths=[""],
+        grid_centers=[[""]],
+        grid_sizes=[[""]],
     )
     assert isinstance(problem, MolecularProblem)
 

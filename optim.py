@@ -113,6 +113,8 @@ def configure_problem(args: argparse.Namespace, run_hash: str) -> ProblemFactory
             str(obj.get("receptor_name", "")),
             str(obj.get("receptor_path", "")),
             str(obj.get("grid_path", "")),
+            list(obj.get("grid_center", [[""]])),
+            list(obj.get("grid_size", [[""]])),
         )
     print("Objectives: ", user_problems)
 
@@ -131,6 +133,8 @@ def configure_problem(args: argparse.Namespace, run_hash: str) -> ProblemFactory
         receptor_names=[v[2] for v in user_problems.values()],
         receptor_paths=[v[3] for v in user_problems.values()],
         grid_paths=[v[4] for v in user_problems.values()],
+        grid_centers=[v[5] for v in user_problems.values()],
+        grid_sizes=[v[6] for v in user_problems.values()],
         run_hash=run_hash,
     )
 

@@ -1,8 +1,6 @@
 """Optimze the molecular weight of a molecule."""
 
 import os
-import random
-import string
 import subprocess
 from multiprocessing import Pool
 from typing import Any, List
@@ -42,9 +40,9 @@ def _run_dockthor(
     output_dir: str,
     receptor_path: str,  #  = "2ylc_receptor.in",
     grid_path: str,  # = "2ylc_receptor.grid",
+    grid_center: List[str],  # = ["-1.2415", "-6.9365", "-14.0990"],
+    grid_size: List[str],  # = ["22.000"] * 3,
     dockthor_path: str = "dockthor-suite/build/bin/dockthor-1.3.11",
-    grid_center: List[str] = ["-1.2415", "-6.9365", "-14.0990"],
-    grid_size: List[str] = ["22.000"] * 3,
 ):
     params = [
         dockthor_path,
@@ -110,6 +108,8 @@ class DockingProblem(MolecularProblem):
         lbound: float,
         ubound: float,
         decoder: DecoderInterface,
+        grid_center: List[str],
+        grid_size: List[str],
         run_hash: str = "",
         *args,
         **kwargs,
@@ -122,6 +122,8 @@ class DockingProblem(MolecularProblem):
         self.docktdeep_weights = "utils/docktdeep-weights.ckpt"
         self.run_hash = run_hash
         self.docking_dir = self.mk_docking_dir()
+        self.grid_center = grid_center
+        self.grid_size = grid_size
 
     def mk_docking_dir(self):
         """Create a new directory for storing docking files."""
@@ -192,6 +194,8 @@ class DockingProblem(MolecularProblem):
         output_dir: str,
         receptor_path: str,
         grid_path: str,
+        grid_center: List[str],  # ["-1.2415", "-6.9365", "-14.0990"],
+        grid_size: List[str],  # ["22.000"] * 3,
         root_dir: str = "",
     ) -> List[Any]:
         """
@@ -210,7 +214,10 @@ class DockingProblem(MolecularProblem):
         with Pool() as pool:
             results = pool.starmap(
                 _run_dockthor,
-                [(path, output_dir, receptor_path, grid_path) for path in file_paths],
+                [
+                    (path, output_dir, receptor_path, grid_path, grid_center, grid_size)
+                    for path in file_paths
+                ],
             )
 
         return results
@@ -310,6 +317,8 @@ class DockingProblem(MolecularProblem):
             output_dir=self.docking_dir,
             receptor_path=self.receptor_path,  # pdb file
             grid_path=self.grid_path,  # grid file
+            grid_center=self.grid_center,
+            grid_size=self.grid_size,
         )
 
         for res in dockthor_res:  # log errors

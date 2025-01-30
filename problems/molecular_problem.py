@@ -125,6 +125,8 @@ class ProblemFactory:
         receptor_names: List[str] = None,
         receptor_paths: List[str] = None,
         grid_paths: List[str] = None,
+        grid_centers: List[List[str]] = None,
+        grid_sizes: List[List[str]] = None,
         run_hash: str = "",
     ) -> Union[MolecularProblem, CompositeProblem]:
         """Create a problem instance based on the given problem identifiers."""
@@ -153,10 +155,18 @@ class ProblemFactory:
                 receptor_name=receptor_name,
                 receptor_path=receptor_path,
                 grid_path=grid_path,
+                grid_center=grid_center,
+                grid_size=grid_size,
                 run_hash=run_hash,
             )
-            for pid, target, receptor_name, receptor_path, grid_path in zip(
-                problem_identifiers, targets, receptor_names, receptor_paths, grid_paths
+            for pid, target, receptor_name, receptor_path, grid_path, grid_center, grid_size in zip(
+                problem_identifiers,
+                targets,
+                receptor_names,
+                receptor_paths,
+                grid_paths,
+                grid_centers,
+                grid_sizes,
             )
         ]
 

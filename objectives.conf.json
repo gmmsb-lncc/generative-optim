@@ -14,7 +14,17 @@
             "target": -25.01,
             "receptor_name": "2ylc",
             "receptor_path": "receptors/2ylc_receptor.pdb",
-            "grid_path": "receptors/2ylc_receptor.grid"
+            "grid_path": "receptors/2ylc_receptor.grid",
+            "grid_center": [
+                "-1.2415",
+                "-6.9365",
+                "-14.0990"
+            ],
+            "grid_size": [
+                "22.000",
+                "22.000",
+                "22.000"
+            ]
         }
     ]
 }
