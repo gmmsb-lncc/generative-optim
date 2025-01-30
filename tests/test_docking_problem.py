@@ -17,6 +17,9 @@ def test_smiles_to_pdb_generate_files():
         lbound=0,
         ubound=0,
         decoder=MockDecoder(),
+        receptor_name="",
+        receptor_path="",
+        grid_path="",
     )
     smiles_list = ["CCO", "c1ccccc1", "CN(C)C(=O)N"]
     output_files = ["test1.pdb", "test2.pdb", "test3.pdb"]
@@ -33,6 +36,9 @@ def test_mmffligand_creates_output_files():
         lbound=0,
         ubound=0,
         decoder=MockDecoder(),
+        receptor_name="",
+        receptor_path="",
+        grid_path="",
     )
     smiles_list = ["CCO", "c1ccccc1", "CN(C)C(=O)N"] * 10
     output_files = [f"test{n}.pdb" for n in range(1, 31)]
@@ -53,6 +59,9 @@ def test_dockthor_executes():
         lbound=0,
         ubound=0,
         decoder=MockDecoder(),
+        receptor_name="",
+        receptor_path="",
+        grid_path="",
     )
     smiles_list = ["c1ccccc1", "CN(C)C(=O)N"]
     output_files = ["test1.pdb", "test2.pdb"]
@@ -103,6 +112,9 @@ def test_get_first_molecule_works():
         lbound=0,
         ubound=0,
         decoder=MockDecoder(),
+        receptor_name="",
+        receptor_path="",
+        grid_path="",
     )
     mol2_path = "tests/data/2ylc_receptor/2ylc_ligand_rnum_maestro_docked.mol2"
     problem.get_first_molecule(mol2_path, "tmp.mol2")
@@ -123,6 +135,9 @@ def test_docktdeep_inference():
         lbound=0,
         ubound=0,
         decoder=MockDecoder(),
+        receptor_name="",
+        receptor_path="",
+        grid_path="",
     )
     ligand_paths = [
         "tests/data/2ylc_receptor/2ylc_ligand_rnum_maestro_docked.mol2",
