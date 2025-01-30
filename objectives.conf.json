@@ -10,12 +10,11 @@
             "target": 1
         },
         {
-            "name": "TanimotoSimProblem",
-            "target": "CCCC1=C(C(=CC(=C1)C2=NC(CO2)C(=O)NO)OC)OC"
-        },
-        {
-            "name": "TanimotoDissimProblem",
-            "target": "O=C(NO)[C@@H](Cc1ccc2ccccc2c1)NS(=O)(=O)c1ccc2ccccc2c1"
+            "name": "DockingProblem",
+            "target": -25.01,
+            "receptor_name": "2ylc",
+            "receptor_path": "receptors/2ylc_receptor.pdb",
+            "grid_path": "receptors/2ylc_receptor.grid"
         }
     ]
 }
