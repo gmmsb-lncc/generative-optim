@@ -6,7 +6,6 @@ import lightning.pytorch as pl
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
-from tqdm import tqdm
 
 import docktgrid
 from docktgrid.voxel_dataset import VoxelDataset
@@ -55,7 +54,7 @@ def inference(
     preds = []
 
     with torch.no_grad():
-        for batch in tqdm(dataloader, total=len(dataloader)):
+        for batch in dataloader:
             x, _ = batch
             batch_pred = model(x)
             preds.append(batch_pred.cpu().numpy())
