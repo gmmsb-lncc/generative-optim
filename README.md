@@ -2,19 +2,42 @@
 Molecular optimization using generative models
 
 ## Installation
-Clone this repository:
+1. Clone this repository:
 
 ```bash
 git clone git@github.com:gmmsb-lncc/generative-optim.git  # ssh
 cd generative-optim
 ```
 
-When using the HierVAE model, create a virtual environment with **Python 3.8** (the latest tested compatible version) and install the dependencies:
-
+2. This code uses Python 3.8; to install Python 3.8 in your machine you can use **conda** or follow the [steps](https://askubuntu.com/questions/682869/how-do-i-install-a-different-python-version-using-apt-get) below:
 ```bash
-conda create --prefix ./venv python=3.8  # using conda for python 3.8
-conda activate ./venv
-python -m pip install -r requirements-hiervae.txt
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.8 python3.8-dev python3.8-venv
+```
+
+3. Create a virtual environment and activate it:
+```bash
+python3.8 -m venv env
+source env/bin/activate
+```
+
+4. Install **openbabel** and **dockthor** from source. Instructions can be found at the **dockthor** git repo.
+
+5. _Install_ docktgrid by downloading the package source-code and adapt it to Python 3.8:
+```
+(...)
+```
+
+6. Install `requirements.txt` deps:
+```bash
+python -m pip install -r requirements-dockthor.txt
+```
+
+6. Copy the test data files, network weights (optionally, copy the `receptors/` dir).
+7. Execute tests:
+```bash
+python -m pytest tests/ -vs
 ```
 
 ## Usage
