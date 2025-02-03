@@ -1,5 +1,6 @@
 """Optimze the molecular weight of a molecule."""
 
+import logging
 import os
 import subprocess
 from multiprocessing import Pool
@@ -148,6 +149,7 @@ class DockingProblem(MolecularProblem):
     ) -> None:
         """
         Convert a list of SMILES strings to PDB files with 3D coordinates generated using RDKit's ETKDG method.
+        If it fails to embed the molecule, it falls back to methane.
 
         Args:
             smiles_list (list): List of SMILES strings to convert
@@ -167,12 +169,20 @@ class DockingProblem(MolecularProblem):
             params.pruneRmsThresh = 0.1  # adjust pruning threshold
             params.randomSeed = 0xF00D  # set random seed
 
-            code = AllChem.EmbedMolecule(mol, params)
-            if code < 0:  # fallback to random coordinates
-                params.useRandomCoords = True
+            try:
                 code = AllChem.EmbedMolecule(mol, params)
-                if code < 0:
-                    raise ValueError(f"3D embedding failed for SMILES: {smi}")
+                if code < 0:  # fallback to random coordinates
+                    params.useRandomCoords = True
+                    code = AllChem.EmbedMolecule(mol, params)
+                    if code < 0:
+                        raise ValueError(f"3D embedding failed for SMILES: {smi}")
+            except Exception as e:
+                logging.warning(
+                    f"Error embedding molecule: {e}, SMILES: {smi}, fallback to methane"
+                )
+                mol = Chem.MolFromSmiles("C")  # fallback to methane
+                mol = Chem.AddHs(mol)
+                AllChem.EmbedMolecule(mol)
 
             # AllChem.UFFOptimizeMolecule(mol)
             Chem.MolToPDBFile(mol, out_path)
