@@ -22,7 +22,7 @@ def _process_mmff_file(ligand_path: str):
         subprocess.run(
             [mmffligand_path, "-l", ligand_path],
             check=True,
-            stdout=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
@@ -31,7 +31,7 @@ def _process_mmff_file(ligand_path: str):
         return (
             ligand_path,
             False,
-            e.stderr.strip() or "Unexpected MMFFLigand convertion error",
+            e.stderr.strip() or e.stdout.strip() or "Unexpected MMFFLigand error",
         )
 
 
@@ -79,7 +79,7 @@ def _run_dockthor(
         subprocess.run(
             params,
             check=True,
-            stdout=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
@@ -88,7 +88,7 @@ def _run_dockthor(
         return (
             ligand_path,
             False,
-            e.stderr.strip() or "Unexpected DockThor error",
+            e.stderr.strip() or e.stdout.strip() or "Unexpected DockThor error",
         )
 
 
@@ -124,6 +124,15 @@ class DockingProblem(MolecularProblem):
         self.docking_dir = self.mk_docking_dir()
         self.grid_center = grid_center
         self.grid_size = grid_size
+
+        # copy grid to default dockthor-generated docking results dir
+        grid_name = os.path.basename(self.grid_path)
+        grid_path = os.path.join(self.docking_dir, f"{self.receptor_name}_receptor")
+        os.makedirs(grid_path, exist_ok=True)
+        if not os.path.exists(os.path.join(grid_path, grid_name)):
+            subprocess.run(
+                ["cp", self.grid_path, os.path.join(grid_path, grid_name)], check=True
+            )
 
     def mk_docking_dir(self):
         """Create a new directory for storing docking files."""
@@ -292,27 +301,36 @@ class DockingProblem(MolecularProblem):
         return [f"gen={prefix}chr={i}.pdb" for i in range(n)]
 
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:
-        """Calculates the fitness of a list of molecules based on the target value."""
+        """Calculates the fitness of a list of molecules based on the target value.
+
+        Evaluate molecules by running them through these pipeline steps:
+          1) Convert SMILES -> PDB
+          2) MMFFLigand
+          3) DockThor
+          4) Prepare input for DocktDeep (extract first molecule from mol2 file)
+          5) Run DocktDeep inference
+          6) Compute final fitness = |preds - target|
+
+        Any molecule that fails at any step is excluded from subsequent steps
+        and assigned a final fitness of 0.0.
+        """
+        sflags = np.ones(len(mols), dtype=bool)  # success flags
 
         lig_files = self.generate_file_name_ids(len(mols), self.n_evals)
         self.convert_smiles_to_pdb(mols, lig_files, self.docking_dir)
         mmff_res = self.run_mmffligand_parallel(lig_files, self.docking_dir)
 
-        for res in mmff_res:  # log errors
-            if not res[1]:
-                print(f"Error in MMFFLigand file {res[0]}: {res[2]}")
+        for i, (fname, success, error_msg) in enumerate(mmff_res):  # log errors
+            if not success:
+                sflags[i] = False
+                print(f"Error in MMFFLigand file {fname}: {error_msg}")
 
-        # copy grid to docking dir
-        grid_name = os.path.basename(self.grid_path)
-        grid_path = os.path.join(self.docking_dir, f"{self.receptor_name}_receptor")
-        os.makedirs(grid_path, exist_ok=True)
-        if not os.path.exists(os.path.join(grid_path, grid_name)):
-            subprocess.run(
-                ["cp", self.grid_path, os.path.join(grid_path, grid_name)], check=True
-            )
+        # filter out failed molecules
+        sidx = sflags.nonzero()[0]  # successful indices
+        s_lig_files = [lig_files[i] for i in sidx]
 
         dockthor_res = self.run_dockthor_parallel(
-            [f.replace(".pdb", ".top") for f in lig_files],
+            [f.replace(".pdb", ".top") for f in s_lig_files],
             root_dir=self.docking_dir,
             output_dir=self.docking_dir,
             receptor_path=self.receptor_path,  # pdb file
@@ -321,21 +339,31 @@ class DockingProblem(MolecularProblem):
             grid_size=self.grid_size,
         )
 
-        for res in dockthor_res:  # log errors
-            if not res[1]:
-                print(f"Error in DockThor file {res[0]}: {res[2]}")
+        for local_i, (file_name, success, error_msg) in enumerate(dockthor_res):
+            if not success:
+                global_i = sidx[local_i]  # map local index to global index
+                sflags[global_i] = False
+                print(f"Error in DockThor file {file_name}: {error_msg}")
 
-        self.prepare_docktdeep_input(  # exclude all other molecules from the mol2 files
-            [f.replace(".pdb", "_docked.mol2") for f in lig_files],
+        # filter out failed molecules
+        sidx = sflags.nonzero()[0]
+        s_lig_files = [lig_files[i] for i in sidx]
+
+        self.prepare_docktdeep_input(
+            [f.replace(".pdb", "_docked.mol2") for f in s_lig_files],
             os.path.join(self.docking_dir, f"{self.receptor_name}_receptor"),
         )
 
-        preds = self.run_docktdeep_inference(
-            [f.replace(".pdb", "_docked.mol2") for f in lig_files],
+        preds_sub = self.run_docktdeep_inference(
+            [f.replace(".pdb", "_docked.mol2") for f in s_lig_files],
             receptor_path=self.receptor_path,
             ckpt_path=self.docktdeep_weights,
             root_dir=os.path.join(self.docking_dir, f"{self.receptor_name}_receptor"),
         )
+
+        preds = np.zeros(len(mols), dtype=float)
+        for sub_i, global_i in enumerate(sidx):
+            preds[global_i] = preds_sub[sub_i]
 
         self.n_evals += 1
         fitness = np.abs(preds - self.target)
