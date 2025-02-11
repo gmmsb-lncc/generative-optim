@@ -1,5 +1,6 @@
 """Optimze the molecular weight of a molecule."""
 
+import csv
 import logging
 import os
 import subprocess
@@ -116,7 +117,7 @@ class DockingProblem(MolecularProblem):
         **kwargs,
     ):
         super().__init__(target_value, n_var, lbound, ubound, decoder, *args, **kwargs)
-        self.n_evals = 0
+        self.n_evals_counter = 0
         self.receptor_name = receptor_name
         self.receptor_path = receptor_path
         self.grid_path = grid_path
@@ -306,9 +307,62 @@ class DockingProblem(MolecularProblem):
 
         return preds
 
-    def generate_file_name_ids(self, n: int, prefix: str) -> List[str]:
-        """Generate random Ids for the file names."""
-        return [f"gen={prefix}chr={i}.pdb" for i in range(n)]
+    # def sanitize_smiles_filename(
+    #     self, smiles: str, prefix: str, suffix: str = ".pdb"
+    # ) -> str:
+    #     """
+    #     Sanitize SMILES strings for filenames by replacing forbidden characters
+    #     with specific, identifiable substitutions.
+
+    #     Args:
+    #         smiles: Input SMILES string
+    #         suffix: File extension to append
+    #         prefix: Prefix to prepend
+
+    #     Returns:
+    #         Sanitized filename with prefix and suffix
+    #     """
+    #     SUBSTITUTIONS = {
+    #         "/": "_fs_",
+    #         "\\": "_bs_",
+    #         ":": "_cl_",
+    #         "*": "_star_",
+    #         "?": "_qm_",
+    #         "#": "_hash_",
+    #         "%": "_prct_",
+    #         "|": "_pipe_",
+    #         "<": "_lt_",
+    #         ">": "_gt_",
+    #         " ": "_sp_",
+    #     }
+
+    #     sanitized = "".join(SUBSTITUTIONS.get(char, char) for char in smiles)
+    #     max_length = 255 - len(suffix) - len(prefix)
+    #     sanitized = sanitized[:max_length]
+
+    #     if sanitized:
+    #         return f"{prefix}{sanitized}{suffix}"
+    #     return f"{prefix}invalid_name{suffix}"  # fallback if empty
+
+    def generate_file_name_ids(self, mols: List[str]) -> List[str]:
+        """Generate Ids for the file names."""
+        return [
+            f"{self.n_evals_counter:03d}_{i:03d}_compound.pdb"
+            for i, m in enumerate(mols)
+        ]
+
+    def create_table_of_file_identifiers(
+        self, mols: List[str], file_ids: List[str]
+    ) -> None:
+        """Write a table of SMILES and corresponding file identifiers to a CSV file."""
+        with open(
+            os.path.join(self.docking_dir, f"file_ids_{self.n_evals_counter:03d}.csv"),
+            mode="w",
+        ) as f:
+            writer = csv.writer(f)
+            writer.writerow(["file_id", "smiles"])
+            for smiles, file_id in zip(mols, file_ids):
+                writer.writerow([file_id, smiles])
 
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:
         """Calculates the fitness of a list of molecules based on the target value.
@@ -326,7 +380,8 @@ class DockingProblem(MolecularProblem):
         """
         sflags = np.ones(len(mols), dtype=bool)  # success flags
 
-        lig_files = self.generate_file_name_ids(len(mols), self.n_evals)
+        lig_files = self.generate_file_name_ids(mols)
+        self.create_table_of_file_identifiers(mols, lig_files)
         self.convert_smiles_to_pdb(mols, lig_files, self.docking_dir)
         mmff_res = self.run_mmffligand_parallel(lig_files, self.docking_dir)
 
@@ -375,7 +430,7 @@ class DockingProblem(MolecularProblem):
         for sub_i, global_i in enumerate(sidx):
             preds[global_i] = preds_sub[sub_i]
 
-        self.n_evals += 1
+        self.n_evals_counter += 1
         fitness = np.abs(preds - self.target)
         return fitness
 
