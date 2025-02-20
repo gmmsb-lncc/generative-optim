@@ -1,5 +1,5 @@
 # generative-optim
-Molecular optimization using generative models
+ Multi- and many-objective optimization in generative chemistry model latent spaces.
 
 ## Installation
 1. Clone this repository:
