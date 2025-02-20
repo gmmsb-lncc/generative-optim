@@ -22,6 +22,8 @@ python3.8 -m venv env
 source env/bin/activate
 ```
 
+### Optional (integration with DockThor, requires access to the original repo)
+
 4. Install **openbabel** and **dockthor** from source. Instructions can be found at the **dockthor** git repo.
 
 5. _Install_ docktgrid by downloading the package source-code and adapt it to Python 3.8:
