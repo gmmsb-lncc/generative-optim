@@ -421,7 +421,9 @@ class DockingProblem(MolecularProblem):
 
         preds_sub = self.run_docktdeep_inference(
             [f.replace(".pdb", "_docked.mol2") for f in s_lig_files],
-            receptor_path=self.receptor_path,
+            receptor_path=self.receptor_path.replace(
+                ".in", ".pdb"
+            ),  # the .pdb file of the receptor must exist in the same directory!
             ckpt_path=self.docktdeep_weights,
             root_dir=os.path.join(self.docking_dir, f"{self.receptor_name}_receptor"),
         )
