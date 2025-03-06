@@ -44,6 +44,7 @@ def _run_dockthor(
     grid_path: str,  # = "2ylc_receptor.grid",
     grid_center: List[str],  # = ["-1.2415", "-6.9365", "-14.0990"],
     grid_size: List[str],  # = ["22.000"] * 3,
+    cofactors_path: str = "",
     dockthor_path: str = "dockthor-suite/build/bin/dockthor-1.3.11",
 ):
     params = [
@@ -76,6 +77,9 @@ def _run_dockthor(
         "--output-dir",
         output_dir,
     ]
+
+    if cofactors_path:
+        params.extend(["--cofactors-path", cofactors_path])
 
     try:
         subprocess.run(
@@ -112,6 +116,7 @@ class DockingProblem(MolecularProblem):
         decoder: DecoderInterface,
         grid_center: List[str],
         grid_size: List[str],
+        cofactors_path: str = "",
         run_hash: str = "",
         *args,
         **kwargs,
@@ -126,6 +131,7 @@ class DockingProblem(MolecularProblem):
         self.docking_dir = self.mk_docking_dir()
         self.grid_center = grid_center
         self.grid_size = grid_size
+        self.cofactors_path = cofactors_path
 
         # copy grid to default dockthor-generated docking results dir
         grid_name = os.path.basename(self.grid_path)
@@ -216,6 +222,7 @@ class DockingProblem(MolecularProblem):
         grid_path: str,
         grid_center: List[str],  # ["-1.2415", "-6.9365", "-14.0990"],
         grid_size: List[str],  # ["22.000"] * 3,
+        cofactors_path: str = "",
         root_dir: str = "",
     ) -> List[Any]:
         """
@@ -235,7 +242,15 @@ class DockingProblem(MolecularProblem):
             results = pool.starmap(
                 _run_dockthor,
                 [
-                    (path, output_dir, receptor_path, grid_path, grid_center, grid_size)
+                    (
+                        path,
+                        output_dir,
+                        receptor_path,
+                        grid_path,
+                        grid_center,
+                        grid_size,
+                        cofactors_path,
+                    )
                     for path in file_paths
                 ],
             )
@@ -351,18 +366,21 @@ class DockingProblem(MolecularProblem):
             for i, m in enumerate(mols)
         ]
 
-    def create_table_of_file_identifiers(
-        self, mols: List[str], file_ids: List[str]
-    ) -> None:
-        """Write a table of SMILES and corresponding file identifiers to a CSV file."""
-        with open(
-            os.path.join(self.docking_dir, f"file_ids_{self.n_evals_counter:03d}.csv"),
-            mode="w",
-        ) as f:
-            writer = csv.writer(f)
-            writer.writerow(["file_id", "smiles"])
-            for smiles, file_id in zip(mols, file_ids):
-                writer.writerow([file_id, smiles])
+    # def create_table_of_file_identifiers(
+    #     self,
+    #     mols: List[str],
+    #     file_ids: List[str],
+    #     individuals: List[List[float]] = None,
+    # ) -> None:
+    #     """Write a table of SMILES and corresponding file identifiers to a CSV file."""
+    #     with open(
+    #         os.path.join(self.docking_dir, f"file_ids_{self.n_evals_counter:03d}.csv"),
+    #         mode="w",
+    #     ) as f:
+    #         writer = csv.writer(f)
+    #         writer.writerow(["file_id", "smiles", "individual"])
+    #         for smiles, file_id, individual in zip(mols, file_ids, individuals):
+    #             writer.writerow([file_id, smiles, individual])
 
     def evaluate_mols(self, mols: List[str]) -> np.ndarray:
         """Calculates the fitness of a list of molecules based on the target value.
@@ -381,7 +399,7 @@ class DockingProblem(MolecularProblem):
         sflags = np.ones(len(mols), dtype=bool)  # success flags
 
         lig_files = self.generate_file_name_ids(mols)
-        self.create_table_of_file_identifiers(mols, lig_files)
+        # self.create_table_of_file_identifiers(mols, lig_files)
         self.convert_smiles_to_pdb(mols, lig_files, self.docking_dir)
         mmff_res = self.run_mmffligand_parallel(lig_files, self.docking_dir)
 
@@ -402,6 +420,7 @@ class DockingProblem(MolecularProblem):
             grid_path=self.grid_path,  # grid file
             grid_center=self.grid_center,
             grid_size=self.grid_size,
+            cofactors_path=self.cofactors_path,
         )
 
         for local_i, (file_name, success, error_msg) in enumerate(dockthor_res):
@@ -438,4 +457,8 @@ class DockingProblem(MolecularProblem):
 
     def _evaluate(self, x, out, *args, **kwargs):
         mols = self.decode_population(x)
+
+        # lig_files = self.generate_file_name_ids(mols)
+        # self.create_table_of_file_identifiers(mols, lig_files, x.tolist())
+
         out["F"] = self.evaluate_mols(mols)

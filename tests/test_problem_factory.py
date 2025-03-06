@@ -21,6 +21,7 @@ def test_problem_factory_creation():
         grid_paths=[""],
         grid_centers=[[""]],
         grid_sizes=[[""]],
+        cofactors_paths=[""],
     )
     assert isinstance(problem, MolecularProblem)
 
@@ -38,6 +39,7 @@ def test_problem_factory_creation():
             grid_paths=[""],
             grid_centers=[[""]],
             grid_sizes=[[""]],
+            cofactors_paths=[""],
         )
     assert "Unknown problem identifiers: Unknown" in str(exc_info.value)
 
@@ -59,6 +61,7 @@ def test_problem_registration():
         grid_paths=[""],
         grid_centers=[[""]],
         grid_sizes=[[""]],
+        cofactors_paths=[""],
     )
     assert isinstance(problem, MolecularProblem)
 

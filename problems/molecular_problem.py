@@ -1,3 +1,5 @@
+import csv
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Protocol, Type, Union
 
@@ -86,17 +88,45 @@ class CompositeProblem(Problem):
         n_var: int,
         lbound: float,
         ubound: float,
+        run_repo: str,
     ):
         self.n_obj = len(problems)
         super().__init__(n_var=n_var, n_obj=self.n_obj, xl=lbound, xu=ubound)
         self.problems = problems
+        self.n_gen = 0
+        self.run_repo = run_repo
+
+    def generate_file_name_ids(self, mols: List[str]) -> List[str]:
+        """Generate Ids for the file names."""
+        return [f"{self.n_gen:03d}_{i:03d}_compound.pdb" for i, m in enumerate(mols)]
+
+    def create_table_of_file_identifiers(
+        self,
+        mols: List[str],
+        file_ids: List[str],
+        individuals: List[List[float]] = None,
+    ) -> None:
+        """Write a table of SMILES and corresponding file identifiers to a CSV file."""
+        with open(
+            os.path.join(self.run_repo, f"file_ids_{self.n_gen:03d}.csv"),
+            mode="w",
+        ) as f:
+            writer = csv.writer(f)
+            writer.writerow(["file_id", "smiles", "individual"])
+            for smiles, file_id, individual in zip(mols, file_ids, individuals):
+                writer.writerow([file_id, smiles, individual])
 
     def _evaluate(
         self, X: np.ndarray, out: Dict[str, np.ndarray], *args: Any, **kwargs: Any
     ) -> None:
         decoded_molecules = self.problems[0].decode_population(X)
+
+        file_ids = self.generate_file_name_ids(decoded_molecules)
+        self.create_table_of_file_identifiers(decoded_molecules, file_ids, X.tolist())
+
         objs = [problem.evaluate_mols(decoded_molecules) for problem in self.problems]
         out["F"] = np.column_stack(objs)
+        self.n_gen += 1
 
 
 class ProblemFactory:
@@ -127,7 +157,9 @@ class ProblemFactory:
         grid_paths: List[str] = None,
         grid_centers: List[List[str]] = None,
         grid_sizes: List[List[str]] = None,
+        cofactors_paths: List[str] = None,
         run_hash: str = "",
+        run: Any = None,
     ) -> Union[MolecularProblem, CompositeProblem]:
         """Create a problem instance based on the given problem identifiers."""
 
@@ -157,9 +189,10 @@ class ProblemFactory:
                 grid_path=grid_path,
                 grid_center=grid_center,
                 grid_size=grid_size,
+                cofactors_path=cofactors_path,
                 run_hash=run_hash,
             )
-            for pid, target, receptor_name, receptor_path, grid_path, grid_center, grid_size in zip(
+            for pid, target, receptor_name, receptor_path, grid_path, grid_center, grid_size, cofactors_path in zip(
                 problem_identifiers,
                 targets,
                 receptor_names,
@@ -167,6 +200,7 @@ class ProblemFactory:
                 grid_paths,
                 grid_centers,
                 grid_sizes,
+                cofactors_paths,
             )
         ]
 
@@ -178,4 +212,5 @@ class ProblemFactory:
                 n_var=n_var,
                 lbound=lbound,
                 ubound=ubound,
+                run_repo=os.path.join(run.repo.path, "meta/chunks", run.hash),
             )

@@ -8,14 +8,14 @@ import subprocess
 from dataclasses import dataclass
 from typing import Tuple
 
-import aim
 import numpy as np
 import torch
-from aim import Run
 from pymoo.core.algorithm import Algorithm
 from pymoo.optimize import minimize
 
+import aim
 import problems
+from aim import Run
 from algorithms import AlgorithmFactory
 from algorithms.callbacks import AimCallback
 from algorithms.operators import BinaryTournament, GaussianMutation_, PointCrossover
@@ -27,7 +27,7 @@ from problems.molecular_problem import ProblemFactory
 def main(args: argparse.Namespace) -> Run:
     seed_everything(args.seed)
     run = configure_callback(args)
-    problem = configure_problem(args, run_hash=run.hash)
+    problem = configure_problem(args, run=run)
     population = Population(
         args.population_size, args.num_vars, args.seed, xl=args.lbound, xu=args.ubound
     )
@@ -88,7 +88,7 @@ def configure_callback(args: argparse.Namespace) -> Run:
     return run
 
 
-def configure_problem(args: argparse.Namespace, run_hash: str) -> ProblemFactory:
+def configure_problem(args: argparse.Namespace, run) -> ProblemFactory:
     avail_probs = {p: getattr(problems, p) for p in problems.__all__}
 
     def determine_type(target):
@@ -115,6 +115,7 @@ def configure_problem(args: argparse.Namespace, run_hash: str) -> ProblemFactory
             str(obj.get("grid_path", "")),
             list(obj.get("grid_center", [[""]])),
             list(obj.get("grid_size", [[""]])),
+            str(obj.get("cofactors_path", "")),
         )
     print("Objectives: ", user_problems)
 
@@ -135,7 +136,9 @@ def configure_problem(args: argparse.Namespace, run_hash: str) -> ProblemFactory
         grid_paths=[v[4] for v in user_problems.values()],
         grid_centers=[v[5] for v in user_problems.values()],
         grid_sizes=[v[6] for v in user_problems.values()],
-        run_hash=run_hash,
+        cofactors_paths=[v[7] for v in user_problems.values()],
+        run_hash=run.hash,
+        run=run,
     )
 
     return problem

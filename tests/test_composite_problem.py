@@ -22,7 +22,9 @@ def test_composite_problem_initialization():
         for i in range(2)
     ]
 
-    composite = CompositeProblem(problems=sub_problems, n_var=10, lbound=0, ubound=1)
+    composite = CompositeProblem(
+        problems=sub_problems, n_var=10, lbound=0, ubound=1, run_repo=""
+    )
 
     assert len(composite.problems) == 2
     assert composite.n_obj == 2
@@ -33,9 +35,13 @@ def test_composite_problem_evaluation():
     X = np.random.rand(2, 32).astype(np.float64)
 
     mw1 = MolecularWeightProblem(200, n_var=32, lbound=0, ubound=1, decoder=decoder)
-    mw2 = MolecularWeightProblem(target_value=0, n_var=32, lbound=0, ubound=1, decoder=decoder)
+    mw2 = MolecularWeightProblem(
+        target_value=0, n_var=32, lbound=0, ubound=1, decoder=decoder
+    )
 
-    composite = CompositeProblem(problems=[mw1, mw2], n_var=32, lbound=0, ubound=1)
+    composite = CompositeProblem(
+        problems=[mw1, mw2], n_var=32, lbound=0, ubound=1, run_repo=""
+    )
 
     out = {}
     composite._evaluate(X, out)

@@ -15,6 +15,7 @@
             "receptor_name": "2ylc",
             "receptor_path": "receptors/2ylc_receptor.pdb",
             "grid_path": "receptors/2ylc_receptor.grid",
+            "cofactors_path": "",
             "grid_center": [
                 "-1.2415",
                 "-6.9365",
